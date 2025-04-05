@@ -1,56 +1,81 @@
 window.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('renderCanvas');
     const engine = new BABYLON.Engine(canvas, true);
-    
-    const createScene = function () {
-        const scene = new BABYLON.Scene(engine);
-        const camera = new BABYLON.UniversalCamera("camera", new BABYLON.Vector3(0, 1.5, -4), scene);
-        camera.attachControl(canvas, true);
+    const scene = new BABYLON.Scene(engine);
 
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+    const camera = new BABYLON.UniversalCamera("camera", new BABYLON.Vector3(0, 1.6, -5), scene);
+    camera.attachControl(canvas, true);
+    camera.speed = 0.1; // 이동 속도 느리게
+    camera.keysUp.push(87);    // W
+    camera.keysDown.push(83);  // S
+    camera.keysLeft.push(65);  // A
+    camera.keysRight.push(68); // D
 
-        // 배경 이미지 설정
-        new BABYLON.Layer('background', 'https://play-lh.googleusercontent.com/NlKoKe46_2G74xk0MGNvCDK7pJ5DwUtYMhOBm2yXfbfsAwOKnImfWq4koNsAjQ17tpg=w2400', scene, true);
+    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
-        // 바닥
-        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 20, height: 20}, scene);
+    // 스카이박스 배경
+    const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
+    const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.disableLighting = true;
+    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://playground.babylonjs.com/textures/skybox", scene);
+    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    skybox.material = skyboxMaterial;
 
-        // GLB 모델 로드
-        BABYLON.SceneLoader.Append("/assets/", "avatar.glb", scene, function () {
-            console.log("GLB 로드 완료");
-        });
+    // GPT 평면 생성
+    const gptPlane = BABYLON.MeshBuilder.CreatePlane("gptPlane", { width: 3, height: 2 }, scene);
+    gptPlane.position = new BABYLON.Vector3(0, 1.5, 3);
+    const planeMaterial = new BABYLON.StandardMaterial("planeMat", scene);
+    planeMaterial.diffuseColor = new BABYLON.Color3(1, 0.8, 0.2);
+    gptPlane.material = planeMaterial;
 
-        // GPT Plane
-        const plane = BABYLON.MeshBuilder.CreatePlane("gptPlane", { width: 1, height: 1 }, scene);
-        plane.position = new BABYLON.Vector3(2, 1, 0);  // GLB와 떨어진 위치
-        const planeMat = new BABYLON.StandardMaterial("planeMat", scene);
-        const dynamicTexture = new BABYLON.DynamicTexture("dynamicTexture", 512, scene);
-        dynamicTexture.drawText("GPT에게 질문하기", 75, 280, "bold 50px Arial", "black", "white");
-        planeMat.diffuseTexture = dynamicTexture;
-        plane.material = planeMat;
+    // GPT UI 텍스트
+    const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-        // 클릭 이벤트
-        plane.actionManager = new BABYLON.ActionManager(scene);
-        plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
-            BABYLON.ActionManager.OnPickTrigger,
-            function () {
-                const userMessage = prompt("GPT에게 질문하세요:");
-                if (userMessage) {
-                    fetch("/gpt_test", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: userMessage })
-                    })
-                    .then(res => res.json())
-                    .then(data => alert("GPT 응답: " + data.response));
-                }
-            }
-        ));
+    const input = new BABYLON.GUI.InputText();
+    input.width = "300px";
+    input.height = "40px";
+    input.top = "-200px";
+    input.color = "black";
+    input.background = "white";
+    input.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    input.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(input);
 
-        return scene;
-    };
+    const output = new BABYLON.GUI.TextBlock();
+    output.text = "GPT 응답이 여기에 표시됩니다.";
+    output.color = "white";
+    output.top = "150px";
+    output.fontSize = 24;
+    output.textWrapping = true;
+    advancedTexture.addControl(output);
 
-    const scene = createScene();
-    engine.runRenderLoop(() => scene.render());
-    window.addEventListener("resize", () => engine.resize());
+    // 클릭 시 GPT 호출
+    gptPlane.actionManager = new BABYLON.ActionManager(scene);
+    gptPlane.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: input.text })
+            })
+            .then(response => response.json())
+            .then(data => {
+                output.text = data.reply;
+            });
+        })
+    );
+
+    // GLB 오브젝트 로드
+    BABYLON.SceneLoader.Append("/assets/", "avatar.glb", scene, function () {
+        console.log("GLB 로드 완료");
+    });
+
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
+
+    window.addEventListener('resize', function () {
+        engine.resize();
+    });
 });

@@ -1,1 +1,15 @@
-<h1>관리자 페이지</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 페이지</title>
+</head>
+<body>
+    <h1>회원 목록</h1>
+    <ul>
+        {% for user in users %}
+            <li>{{ user[1] }} (등급: {{ user[2] }}, 포인트: {{ user[3] }})</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

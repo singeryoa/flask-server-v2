@@ -1,14 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <title>메인 페이지</title>
 </head>
 <body>
     <h1>메인 페이지</h1>
+
+    <form action="/register" method="POST">
+        <input name="nickname" placeholder="닉네임">
+        <input name="level" placeholder="등급">
+        <button type="submit">회원 등록</button>
+    </form>
+
+    <form action="/write" method="POST">
+        <input name="title" placeholder="제목">
+        <input name="author" placeholder="작성자">
+        <label><input type="checkbox" name="enable_3d"> 3D 거래 가능</label>
+        <button type="submit">글 작성</button>
+    </form>
+
     <ul>
         {% for post in posts %}
-            <li>{{ post[1] }} - {{ post[2] }} - {{ post[3] }}</li>
+            <li>
+                {{ post[1] }} - {{ post[2] }} - {{ post[3] }}
+                {% if post[4] == 1 %}
+                    <a href="/world" target="_blank">3D 접속</a>
+                    <a href="/reward/{{ post[0] }}">포인트 지급</a>
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
 </body>

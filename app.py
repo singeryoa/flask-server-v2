@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 import sqlite3, os
 from dotenv import load_dotenv
 import openai
+from datetime import datetime
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -29,15 +30,8 @@ def init_db():
 def index():
     init_db()
     with sqlite3.connect(DB_NAME) as conn:
-        # 테스트 데이터가 없다면 자동 삽입 (한 번만 작동)
-        if not conn.execute("SELECT * FROM posts").fetchone():
-            conn.execute("INSERT INTO posts (title, content, author) VALUES (?, ?, ?)",
-                         ("테스트 제목", "테스트 내용입니다", "관리자"))
-
         posts = conn.execute("SELECT * FROM posts ORDER BY id DESC").fetchall()
     return render_template('index.html', posts=posts)
-
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -52,7 +46,6 @@ def write():
     title = request.form['title']
     author = request.form['author']
     enable_3d = 1 if 'enable_3d' in request.form else 0
-    from datetime import datetime
     date = datetime.now().strftime('%Y-%m-%d')
     with sqlite3.connect(DB_NAME) as conn:
         conn.execute("INSERT INTO posts (title, author, date, enable_3d) VALUES (?, ?, ?, ?)",

@@ -4,45 +4,36 @@ window.addEventListener('DOMContentLoaded', function () {
 
     const createScene = function () {
         const scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color3(0.9, 0.9, 1);
+        scene.clearColor = new BABYLON.Color3(0.9, 0.9, 1.0);
 
-        const camera = new BABYLON.UniversalCamera("camera", new BABYLON.Vector3(0, 2, -10), scene);
+        const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2, -10), scene);
         camera.attachControl(canvas, true);
         camera.speed = 0.5;
 
-        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+        light.intensity = 1.0;
 
-        const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 30, height: 30 }, scene);
+        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 20, height: 20}, scene);
+        ground.position.y = 0;
 
-        // Skybox
-        const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000 }, scene);
-        const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
-        skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.9, 1.0);
-        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        skybox.material = skyboxMaterial;
-
-        // GPT NPC Plane
-        const npc = BABYLON.MeshBuilder.CreatePlane("npcText", {width: 2, height: 1}, scene);
-        npc.position = new BABYLON.Vector3(0, 2, 2);
-        const npcMat = new BABYLON.StandardMaterial("npcMat", scene);
-        npcMat.diffuseColor = new BABYLON.Color3.Black();
-        npc.material = npcMat;
-
-        npc.actionManager = new BABYLON.ActionManager(scene);
-        npc.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
-            BABYLON.ActionManager.OnPickTrigger,
-            function () {
-                document.getElementById("chatBox").style.display = "block";
-            }
-        ));
-
-        // GLB 로딩
-        BABYLON.SceneLoader.ImportMesh("", "/assets/", "avatar.glb", scene, function (meshes) {
-            const obj = meshes[0];
-            obj.position = new BABYLON.Vector3(2, 0, 0);
-            obj.scaling = new BABYLON.Vector3(1, 1, 1);
+        BABYLON.SceneLoader.Append("/assets/", "avatar.glb", scene, function () {
+            console.log("GLB 로드 완료");
         });
+
+        const npcPlane = BABYLON.MeshBuilder.CreatePlane("npcText", {width: 3, height: 1.5}, scene);
+        npcPlane.position = new BABYLON.Vector3(0, 2, 0);
+        const mat = new BABYLON.StandardMaterial("mat", scene);
+        const tex = new BABYLON.DynamicTexture("dynamic texture", {width:512, height:256}, scene, true);
+        tex.drawText("GPT NPC\n(클릭하세요)", 75, 140, "bold 32px Arial", "black", "white");
+        mat.diffuseTexture = tex;
+        npcPlane.material = mat;
+
+        npcPlane.actionManager = new BABYLON.ActionManager(scene);
+        npcPlane.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
+                document.getElementById("gptUI").style.display = "block";
+            })
+        );
 
         return scene;
     };
@@ -52,15 +43,15 @@ window.addEventListener('DOMContentLoaded', function () {
     window.addEventListener("resize", () => engine.resize());
 });
 
-// GPT 대화 전송
 function sendToGPT() {
-    const msg = document.getElementById("userInput").value;
-    fetch('/gpt_test', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ message: msg })
-    }).then(res => res.json())
-      .then(data => {
-        document.getElementById("gptResponse").innerText = "GPT 응답: " + data.response;
-      });
+    const input = document.getElementById("userInput").value;
+    fetch("/gpt_test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("gptResponse").innerText = data.response;
+    });
 }

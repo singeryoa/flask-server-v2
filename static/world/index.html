@@ -2,17 +2,39 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Netplety 3D 거래방</title>
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <title>Netplety World</title>
+    <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: black; }
+        #renderCanvas { width: 100%; height: 100%; touch-action: none; }
+        #gptUI {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+        #gptUI textarea {
+            width: 300px;
+            height: 80px;
+        }
+    </style>
 </head>
 <body>
-    <canvas id="renderCanvas" style="width: 100%; height: 100vh;"></canvas>
-    <div id="chatBox" style="position:absolute;top:10px;left:10px;background:#fff;padding:10px;display:none;z-index:1000">
-        <input id="userInput" placeholder="GPT에게 질문하세요" style="width:300px;" />
+    <canvas id="renderCanvas"></canvas>
+
+    <div id="gptUI">
+        <p>GPT와 대화하세요:</p>
+        <textarea id="userInput" placeholder="메시지 입력..."></textarea><br>
         <button onclick="sendToGPT()">보내기</button>
-        <div id="gptResponse" style="margin-top:10px;color:black"></div>
+        <p id="gptResponse"></p>
     </div>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="main.js"></script>
 </body>
 </html>

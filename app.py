@@ -1,90 +1,65 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
-import sqlite3, os
-from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+import sqlite3
 import openai
+import os
+from dotenv import load_dotenv
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__, static_url_path='', static_folder='static')
-DB_NAME = 'database.db'
 
-def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
-        conn.execute("""CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nickname TEXT,
-            level TEXT,
-            points INTEGER DEFAULT 0
-        )""")
-        conn.execute("""CREATE TABLE IF NOT EXISTS posts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            author TEXT,
-            date TEXT,
-            enable_3d INTEGER DEFAULT 0
-        )""")
-
+# ✅ 기본 접속은 반드시 2D 게시판
 @app.route('/')
 def index():
-    init_db()
-    with sqlite3.connect(DB_NAME) as conn:
-        posts = conn.execute("SELECT * FROM posts ORDER BY id DESC").fetchall()
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM posts ORDER BY id DESC")
+    posts = c.fetchall()
+    conn.close()
     return render_template('index.html', posts=posts)
-
-@app.route('/register', methods=['POST'])
-def register():
-    nickname = request.form['nickname']
-    level = request.form['level']
-    with sqlite3.connect(DB_NAME) as conn:
-        conn.execute("INSERT INTO users (nickname, level) VALUES (?, ?)", (nickname, level))
-    return redirect(url_for('index'))
 
 @app.route('/write', methods=['POST'])
 def write():
     title = request.form['title']
     author = request.form['author']
-    enable_3d = 1 if 'enable_3d' in request.form else 0
-    from datetime import datetime
-    date = datetime.now().strftime('%Y-%m-%d')
-    with sqlite3.connect(DB_NAME) as conn:
-        conn.execute("INSERT INTO posts (title, author, date, enable_3d) VALUES (?, ?, ?, ?)",
-                     (title, author, date, enable_3d))
+    enable_3d = 'enable_3d' in request.form
+
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO posts (title, author, content, enable_3d) VALUES (?, ?, ?, ?)",
+              (title, author, '', enable_3d))
+    conn.commit()
+    conn.close()
     return redirect(url_for('index'))
 
 @app.route('/reward/<int:post_id>')
 def reward(post_id):
-    with sqlite3.connect(DB_NAME) as conn:
-        post = conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
-        if post:
-            conn.execute("UPDATE users SET points = points + 30 WHERE nickname = ?", (post[2],))
-    return redirect(url_for('index'))
+    return f"{post_id}번 글에 대한 포인트가 지급되었습니다."
 
-@app.route('/admin')
-def admin():
-    with sqlite3.connect(DB_NAME) as conn:
-        users = conn.execute("SELECT * FROM users").fetchall()
-    return render_template('admin.html', users=users)
-
+# ✅ 3D 월드 접속은 /world URL에서만 실행
 @app.route('/world')
 def world():
-    return send_from_directory('static/world', 'index.html')
+    return render_template('world.html')
 
-@app.route('/assets/<path:filename>')
-def serve_assets(filename):
-    return send_from_directory('static/world/assets', filename)
-
-@app.route('/gpt_test', methods=['POST'])
-def gpt_test():
-    user_input = request.json['message']
+# ✅ GPT 연동 엔드포인트
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_msg = request.json['message']
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "당신은 한국어로만 답변하는 GPT입니다."},
-            {"role": "user", "content": user_input}
+            {"role": "system", "content": "당신은 친절한 조수입니다. 한국어로만 대답하세요."},
+            {"role": "user", "content": user_msg}
         ]
     )
-    return jsonify({"response": response['choices'][0]['message']['content']})
+    reply = response.choices[0].message['content']
+    return jsonify({'reply': reply})
+
+# ✅ GLB 등 정적 파일 접근 라우팅
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return app.send_static_file(f"world/assets/{filename}")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run()

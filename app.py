@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 import sqlite3, os
 from dotenv import load_dotenv
 import openai
-from datetime import datetime
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -12,21 +11,19 @@ DB_NAME = 'database.db'
 
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nickname TEXT,
-                level TEXT,
-                points INTEGER DEFAULT 0
-            )""")
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS posts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT,
-                author TEXT,
-                date TEXT,
-                enable_3d INTEGER DEFAULT 0
-            )""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nickname TEXT,
+            level TEXT,
+            points INTEGER DEFAULT 0
+        )""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            author TEXT,
+            date TEXT,
+            enable_3d INTEGER DEFAULT 0
+        )""")
 
 @app.route('/')
 def index():
@@ -48,6 +45,7 @@ def write():
     title = request.form['title']
     author = request.form['author']
     enable_3d = 1 if 'enable_3d' in request.form else 0
+    from datetime import datetime
     date = datetime.now().strftime('%Y-%m-%d')
     with sqlite3.connect(DB_NAME) as conn:
         conn.execute("INSERT INTO posts (title, author, date, enable_3d) VALUES (?, ?, ?, ?)",
@@ -72,21 +70,21 @@ def admin():
 def world():
     return send_from_directory('static/world', 'index.html')
 
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_from_directory('static/world/assets', filename)
+
 @app.route('/gpt_test', methods=['POST'])
 def gpt_test():
     user_input = request.json['message']
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "당신은 한국어로만 대답하는 GPT입니다."},
+            {"role": "system", "content": "당신은 한국어로만 답변하는 GPT입니다."},
             {"role": "user", "content": user_input}
         ]
     )
     return jsonify({"response": response['choices'][0]['message']['content']})
-
-@app.route('/assets/<path:filename>')
-def serve_assets(filename):
-    return send_from_directory('static/world/assets', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)

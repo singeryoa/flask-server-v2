@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('renderCanvas');
     const engine = new BABYLON.Engine(canvas, true);
     const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color3(0.9, 0.9, 1);
+    scene.clearColor = new BABYLON.Color3(0.9, 0.9, 1.0);
   
     const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 2, -10), scene);
     camera.setTarget(BABYLON.Vector3.Zero());
@@ -13,6 +13,7 @@ window.addEventListener('DOMContentLoaded', () => {
   
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 30, height: 30 }, scene);
   
+    // GLB 로드
     BABYLON.SceneLoader.Append("/assets/", "avatar.glb", scene, () => {
       console.log("GLB 로드 완료");
     });
@@ -37,7 +38,7 @@ window.addEventListener('DOMContentLoaded', () => {
           })
           .then(res => res.json())
           .then(data => {
-            texture.drawText(data.response, 20, 135, "bold 24px Arial", "black", "white", true);
+            texture.drawText(data.response, 20, 135, "bold 20px Arial", "black", "white", true);
           });
         }
       })

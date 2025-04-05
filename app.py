@@ -29,8 +29,14 @@ def init_db():
 def index():
     init_db()
     with sqlite3.connect(DB_NAME) as conn:
+        # 테스트 데이터가 없다면 자동 삽입 (한 번만 작동)
+        if not conn.execute("SELECT * FROM posts").fetchone():
+            conn.execute("INSERT INTO posts (title, content, author) VALUES (?, ?, ?)",
+                         ("테스트 제목", "테스트 내용입니다", "관리자"))
+
         posts = conn.execute("SELECT * FROM posts ORDER BY id DESC").fetchall()
     return render_template('index.html', posts=posts)
+
 
 
 @app.route('/register', methods=['POST'])

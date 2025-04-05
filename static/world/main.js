@@ -1,4 +1,4 @@
-window.addEventListener('DOMContentLoaded', function () {
+window.addEventListener('DOMContentLoaded', async function () {
     const canvas = document.getElementById('renderCanvas');
     const engine = new BABYLON.Engine(canvas, true);
     const scene = new BABYLON.Scene(engine);
@@ -22,31 +22,23 @@ window.addEventListener('DOMContentLoaded', function () {
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
     skybox.material = skyboxMaterial;
 
-    // GPT 평면
+    // GPT Plane
     const gptPlane = BABYLON.MeshBuilder.CreatePlane("gptPlane", { width: 4, height: 3 }, scene);
     gptPlane.position = new BABYLON.Vector3(0, 2, 5);
     const planeMaterial = new BABYLON.StandardMaterial("planeMat", scene);
     planeMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.6, 0.1);
     gptPlane.material = planeMaterial;
 
-    // 전체 UI (기본은 비어있음, 클릭 시 동적으로 추가)
+    // UI
     const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     let input, output;
+    let uiVisible = false;
 
-    // 클릭 시 GPT UI 생성
     gptPlane.actionManager = new BABYLON.ActionManager(scene);
     gptPlane.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-            // UI가 이미 있으면 제거
-            if (input && output) {
-                advancedTexture.removeControl(input);
-                advancedTexture.removeControl(output);
-                input = null;
-                output = null;
-                return;
-            }
+            if (uiVisible) return;
 
-            // 입력창
             input = new BABYLON.GUI.InputText();
             input.width = "300px";
             input.height = "40px";
@@ -57,18 +49,20 @@ window.addEventListener('DOMContentLoaded', function () {
             input.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
             advancedTexture.addControl(input);
 
-            // 출력창
             output = new BABYLON.GUI.TextBlock();
             output.text = "GPT 응답이 여기에 표시됩니다.";
             output.color = "white";
             output.top = "150px";
             output.fontSize = 24;
             output.textWrapping = true;
+            output.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+            output.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
             advancedTexture.addControl(output);
 
-            // 엔터 입력 시 GPT 호출
+            uiVisible = true;
+
             input.onKeyboardEventProcessedObservable.add((eventData) => {
-                if (eventData.key === "Enter") {
+                if (eventData.key === "Enter" && input.text.trim() !== "") {
                     fetch('/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -77,16 +71,27 @@ window.addEventListener('DOMContentLoaded', function () {
                     .then(response => response.json())
                     .then(data => {
                         output.text = data.reply;
+                    })
+                    .catch(err => {
+                        output.text = "오류가 발생했습니다.";
                     });
                 }
             });
         })
     );
 
-    // GLB 오브젝트 로드 (핵심 구조 유지)
+    // GLB 오브젝트 로드
     BABYLON.SceneLoader.Append("/assets/", "avatar.glb", scene, function () {
         console.log("GLB 로드 완료");
     });
+
+    // ✅ VR 모드 자동 진입 (퀘스트 브라우저 포함)
+    if (navigator.userAgent.includes("Quest") || navigator.userAgent.includes("OculusBrowser")) {
+        const xr = await scene.createDefaultXRExperienceAsync();
+        xr.baseExperience.enterXRAsync("immersive-vr", "local-floor", xr.renderTarget)
+            .then(() => console.log("VR 모드 진입 완료"))
+            .catch((e) => console.warn("VR 진입 실패:", e));
+    }
 
     engine.runRenderLoop(function () {
         scene.render();

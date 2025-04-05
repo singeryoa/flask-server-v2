@@ -6,7 +6,7 @@ import openai
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-app = Flask(__name__, static_url_path='', static_folder='static')
+app = Flask(__name__)
 DB_NAME = 'database.db'
 
 def init_db():

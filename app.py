@@ -32,6 +32,7 @@ def index():
         posts = conn.execute("SELECT * FROM posts ORDER BY id DESC").fetchall()
     return render_template('index.html', posts=posts)
 
+
 @app.route('/register', methods=['POST'])
 def register():
     nickname = request.form['nickname']

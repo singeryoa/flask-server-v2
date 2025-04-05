@@ -9,7 +9,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
-# ✅ 기본 접속 경로는 2D 게시판
+# ✅ 2D 게시판: 기본 접속 시 index.html
 @app.route('/')
 def index():
     conn = sqlite3.connect('database.db')
@@ -34,17 +34,17 @@ def write():
     conn.close()
     return redirect(url_for('index'))
 
-# ✅ 포인트 지급 처리 (단순 표시)
+# ✅ 포인트 지급 처리
 @app.route('/reward/<int:post_id>')
 def reward(post_id):
     return f"{post_id}번 글에 대한 포인트가 지급되었습니다."
 
-# ✅ 3D 월드는 /world 경로에서만 진입
+# ✅ 3D 월드 진입
 @app.route('/world')
 def world():
     return render_template('world.html')
 
-# ✅ GPT 대화 API (gpt-3.5-turbo, 한국어 응답)
+# ✅ GPT 채팅 (gpt-3.5-turbo + 한국어 응답)
 @app.route('/chat', methods=['POST'])
 def chat():
     user_msg = request.json['message']
@@ -58,11 +58,11 @@ def chat():
     reply = response.choices[0].message['content']
     return jsonify({'reply': reply})
 
-# ✅ GLB 파일 경로 유지 (/assets/avatar.glb)
+# ✅ 정적 자산 (GLB)
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
     return app.send_static_file(f"world/assets/{filename}")
 
+# ✅ Render 서버 실행용 설정
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
-

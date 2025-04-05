@@ -12,19 +12,21 @@ DB_NAME = 'database.db'
 
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
-        conn.execute("""CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nickname TEXT,
-            level TEXT,
-            points INTEGER DEFAULT 0
-        )""")
-        conn.execute("""CREATE TABLE IF NOT EXISTS posts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            author TEXT,
-            date TEXT,
-            enable_3d INTEGER DEFAULT 0
-        )""")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nickname TEXT,
+                level TEXT,
+                points INTEGER DEFAULT 0
+            )""")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS posts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                author TEXT,
+                date TEXT,
+                enable_3d INTEGER DEFAULT 0
+            )""")
 
 @app.route('/')
 def index():

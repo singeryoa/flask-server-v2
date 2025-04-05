@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>메인 페이지</title>
-</head>
+<head><meta charset="UTF-8"><title>Netplety 게시판</title></head>
 <body>
-    <h1>메인 페이지</h1>
+    <h1>Netplety 게시판</h1>
 
     <form action="/register" method="POST">
         <input name="nickname" placeholder="닉네임">
@@ -23,9 +20,9 @@
     <ul>
         {% for post in posts %}
             <li>
-                {{ post[1] }} - {{ post[2] }} - {{ post[3] }}
+                {{ post[1] }} / {{ post[2] }} / {{ post[3] }}
                 {% if post[4] == 1 %}
-                    <a href="/world" target="_blank">3D 접속</a>
+                    <a href="/world" target="_blank">3D 월드 이동</a>
                     <a href="/reward/{{ post[0] }}">포인트 지급</a>
                 {% endif %}
             </li>

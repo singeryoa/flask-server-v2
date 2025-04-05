@@ -2,37 +2,30 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Netplety World</title>
+    <title>Netplety 3D World</title>
     <style>
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: black; }
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
         #renderCanvas { width: 100%; height: 100%; touch-action: none; }
         #gptUI {
             position: absolute;
             top: 10%;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             padding: 20px;
-            border-radius: 10px;
+            border: 1px solid black;
             display: none;
-            z-index: 10;
-        }
-        #gptUI textarea {
-            width: 300px;
-            height: 80px;
+            z-index: 5;
         }
     </style>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
-
     <div id="gptUI">
-        <p>GPT와 대화하세요:</p>
-        <textarea id="userInput" placeholder="메시지 입력..."></textarea><br>
+        <textarea id="userInput" rows="4" cols="40" placeholder="GPT에게 말 걸기..."></textarea><br>
         <button onclick="sendToGPT()">보내기</button>
         <p id="gptResponse"></p>
     </div>
-
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="main.js"></script>

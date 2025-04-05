@@ -76,7 +76,7 @@ def gpt_test():
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "당신은 한국어로만 답변하는 GPT입니다."},
+            {"role": "system", "content": "당신은 한국어로만 대답하는 GPT입니다."},
             {"role": "user", "content": user_input}
         ]
     )

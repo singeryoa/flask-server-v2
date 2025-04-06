@@ -84,7 +84,11 @@ def serve_assets(filename):
 
 @app.route('/gpt_test', methods=['POST'])
 def gpt_test():
-    user_input = request.json['message']
+
+    data = request.get_json()
+    user_input = data['message']
+    # user_input = request.json['message']  이 줄을 위 두 줄로 대체
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[

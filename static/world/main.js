@@ -1,6 +1,26 @@
 window.addEventListener('DOMContentLoaded', () => {
+
+    // GLB 모델: 최대 3~5MB 이하 권장 (10MB 이상은 Quest에서 로딩 문제 발생)
+    // 스카이박스: 512px~1024px 사이 해상도 가장 적합
+    // 2048px 이상 → VR 모드에서 로딩 실패 가능성 ↑
+    // Babylon.js 씬 최적화
+    // main.js의 createScene() 함수 최상단에 아래 추가:
+    scene.autoClear = true;
+    scene.autoClearDepthAndStencil = true;
+    scene.useRightHandedSystem = false;
+    engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
+
+
     const canvas = document.getElementById('renderCanvas');
-    const engine = new BABYLON.Engine(canvas, true);
+
+    // 렌더 지연 방지를 위한 BABYLON.Engine 초기화 설정
+    const engine = new BABYLON.Engine(canvas, true, {
+        preserveDrawingBuffer: true,
+        stencil: true,
+        disableWebGL2Support: false
+    });
+    // const engine = new BABYLON.Engine(canvas, true);  최적화를 위해 위 5줄로 변경
+
     const scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color3(0.8, 0.9, 1.0); // 밝은 배경
 
@@ -27,15 +47,14 @@ window.addEventListener('DOMContentLoaded', () => {
     ground.material = new BABYLON.StandardMaterial("groundMat", scene);
     ground.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
 
-    // 배경 스카이박스
-    // 밝은 외부 풍경 배경 스카이박스 추가
-    const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
-    const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
-    skyboxMaterial.backFaceCulling = false;
-    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://playground.babylonjs.com/textures/skybox", scene);
-    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-    skyboxMaterial.disableLighting = true;
-    skybox.material = skyboxMaterial;
+
+    // Babylon.js 씬 최적화
+    scene.autoClear = true;
+    scene.autoClearDepthAndStencil = true;
+    scene.useRightHandedSystem = false;
+    engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
+
+
 
 
     // GPT NPC 평면
@@ -72,7 +91,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     .catch(err => {
                         alert("에러 발생: " + err);
                     });
-                
+
 
                 /*  
                 fetch("/gpt_test", {
@@ -93,7 +112,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
     // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
     // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
-    BABYLON.SceneLoader.Append("/assets/", "avatar.glb", scene, function () {
+    BABYLON.SceneLoader.Append("/assets/", "mole.glb", scene, function () {
         const root = scene.meshes[scene.meshes.length - 1];
         root.position = new BABYLON.Vector3(3, 0, 0); // NPC에서 약간 떨어진 위치
         root.getChildMeshes().forEach(m => {
@@ -104,6 +123,44 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         console.log("GLB 로드 완료");
     });
+
+
+
+
+    
+    // 배경 스카이박스 생성
+    // createScene() 함수 하단 또는 GLB 로딩 이후에 추가
+    const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
+    const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
+    skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.disableLighting = true;
+    // skybox.infiniteDistance = true;     생략 가능.
+
+
+    // 스카이박스 텍스쳐 설정
+    // 스카이박스 개인 파일로 설정은 바로 아래 코드 사용
+    // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/assets/skybox/sky", scene);
+    /* 
+    스카이박스를 /static/world/assets/skybox/ 폴더에 아래와 같이 넣습니다:
+    sky_px.jpg
+    sky_py.jpg
+    sky_pz.jpg
+    sky_nx.jpg
+    sky_ny.jpg
+    sky_nz.jpg
+    그 후, 위 Babylon 코드에서 "/assets/skybox/sky" 는 "sky_px.jpg" 등으로 확장자를 자동 인식하여 6면 큐브로 스카이박스를 구성합니다.
+    */
+    // 아래 1줄은 기존 제공 코드.   
+    // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://playground.babylonjs.com/textures/skybox", scene);
+    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/assets/skybox/sky", scene);
+    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+
+    skybox.material = skyboxMaterial;
+
+
+
+
+
 
     engine.runRenderLoop(() => scene.render());
     window.addEventListener("resize", () => engine.resize());

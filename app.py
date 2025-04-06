@@ -148,6 +148,23 @@ def gpt_test():
 
 
 
+"""
+Render의 무료 서버는 보안상 지정된 포트만 스캔해서 열려 있는지 확인합니다. 
+포트를 직접 지정해버리면 그 포트를 Render가 감지하지 못해서 timeout 에러가 납니다. 
+그래서 반드시 os.environ.get("PORT")로 Render가 알려주는 포트를 사용해야만 해요.
+
+아래는 과거 코드.
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
+"""
+# 이 부분을 정확히 삽입해야 render 에 발행이 됨.
+port = int(os.environ.get("PORT", 10000))
+app.run(host='0.0.0.0', port=port)
+
+
+
+
 
 
 

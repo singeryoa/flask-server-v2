@@ -141,11 +141,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     // GPT로 메시지 전송
+    // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
     window.sendToGPT = function () {
         const msg = document.getElementById("gptInput").value;
         if (!msg) return;
 
-        fetch("/gpt_test", {
+        // fetch("/gpt_test",  에서 아래 경로로 변경
+        fetch("https://flask-server-v2.onrender.com/gpt_test", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: msg })

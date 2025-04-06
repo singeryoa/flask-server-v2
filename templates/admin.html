@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>관리자 페이지</title>
+  <meta charset="UTF-8" />
+  <title>관리자 모드 - 회원 리스트</title>
 </head>
 <body>
-  <h1>회원 목록</h1>
-  <ul>
+  <h1>👤 등록된 회원 정보</h1>
+  <table border="1" cellpadding="5">
+    <tr><th>닉네임</th><th>등급</th><th>포인트</th></tr>
     {% for user in users %}
-    <li>{{ user[1] }} (등급: {{ user[2] }}) - {{ user[3] }}포인트</li>
+    <tr>
+      <td>{{ user[1] }}</td>
+      <td>{{ user[2] }}</td>
+      <td>{{ user[3] }}</td>
+    </tr>
     {% endfor %}
-  </ul>
-  <a href="/">메인으로</a>
+  </table>
 </body>
 </html>

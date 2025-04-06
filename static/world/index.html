@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Netplety 3D 거래방</title>
+  <!-- Babylon.js의 렌더링 엔진 (필수) -->
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <!-- .glb, .gltf 등 외부 모델 로드를 위한 로더  (필수) -->
   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <!-- 유저 정의 스크립트 (GLB 로딩, 씬 생성 등)   (필수수) -->
+  <script src="/world/main.js"></script>
   <style>
     #gptWindow {
         display: none;
@@ -30,6 +34,27 @@
     <p id="gptResponse"></p>
   </div>
 
-  <script src="/world/main.js"></script>
 </body>
 </html>
+
+
+
+
+
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Netplety 3D 거래방</title>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+</head>
+<body>
+  <canvas id="renderCanvas" style="width: 100%; height: 100vh;"></canvas>
+  <script src="main.js"></script>
+</body>
+</html>
+
+-->
+<!-- 위 코드는 수정 이전의 기존 코드임임 -->

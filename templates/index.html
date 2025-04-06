@@ -1,4 +1,48 @@
 <!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>넷플리티 ID 공유 게시판</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <h1>🎬 넷플리티 ID 공유 게시판</h1>
+
+  <form method="POST" action="/write">
+    <input type="text" name="title" placeholder="게시글 제목" required />
+    <input type="text" name="author" placeholder="작성자 닉네임" required />
+    <label><input type="checkbox" name="enable_3d" /> 3D 월드에서 거래 가능</label>
+    <button type="submit">글 작성</button>
+  </form>
+
+  <ul>
+    {% for post in posts %}
+      <li>
+        <strong>{{ post[1] }}</strong> - {{ post[2] }} | {{ post[3] }}
+        {% if post[4] %}
+          🔗 <a href="/world" target="_blank">3D 월드로 이동</a>
+          💰 <a href="/reward/{{ post[0] }}">+30P 지급</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <hr />
+  <h2>회원 정보 등록</h2>
+  <form method="POST" action="/register">
+    <input type="text" name="nickname" placeholder="닉네임" required />
+    <input type="text" name="level" placeholder="카페 등급" />
+    <button type="submit">등록</button>
+  </form>
+</body>
+</html>
+
+
+
+
+
+<!--
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -12,3 +56,4 @@
   <script src="/world/main.js"></script>
 </body>
 </html>
+-->

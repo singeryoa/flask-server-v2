@@ -1,16 +1,5 @@
 window.addEventListener('DOMContentLoaded', () => {
 
-    // GLB 모델: 최대 3~5MB 이하 권장 (10MB 이상은 Quest에서 로딩 문제 발생)
-    // 스카이박스: 512px~1024px 사이 해상도 가장 적합
-    // 2048px 이상 → VR 모드에서 로딩 실패 가능성 ↑
-    // Babylon.js 씬 최적화
-    // main.js의 createScene() 함수 최상단에 아래 추가:
-    scene.autoClear = true;
-    scene.autoClearDepthAndStencil = true;
-    scene.useRightHandedSystem = false;
-    engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
-
-
     const canvas = document.getElementById('renderCanvas');
 
     // 렌더 지연 방지를 위한 BABYLON.Engine 초기화 설정
@@ -22,7 +11,21 @@ window.addEventListener('DOMContentLoaded', () => {
     // const engine = new BABYLON.Engine(canvas, true);  최적화를 위해 위 5줄로 변경
 
     const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color3(0.8, 0.9, 1.0); // 밝은 배경
+    // scene.clearColor = new BABYLON.Color3(0.8, 0.9, 1.0); // 밝은 배경, 이 코드는 없어도 됨
+
+    // GLB 모델: 최대 3~5MB 이하 권장 (10MB 이상은 Quest에서 로딩 문제 발생)
+    // 스카이박스: 512px~1024px 사이 해상도 가장 적합
+    // 2048px 이상 → VR 모드에서 로딩 실패 가능성 ↑
+    // Babylon.js 씬 최적화
+    // main.js의 createScene() 함수 최상단에 아래 추가:
+    scene.autoClear = true;
+    scene.autoClearDepthAndStencil = true;
+    scene.useRightHandedSystem = false;
+    engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
+
+
+
+
 
     // 카메라 + WASD 이동
     const camera = new BABYLON.UniversalCamera("UniCam", new BABYLON.Vector3(0, 2, -5), scene);
@@ -131,7 +134,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // 배경 스카이박스 생성
     // createScene() 함수 하단 또는 GLB 로딩 이후에 추가
     const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
-    const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
+    const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);  // skyBoxMaterial 는 변수명이므로 skyBox 로 해도 됨
+    
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.disableLighting = true;
     // skybox.infiniteDistance = true;     생략 가능.
@@ -165,6 +169,15 @@ window.addEventListener('DOMContentLoaded', () => {
     engine.runRenderLoop(() => scene.render());
     window.addEventListener("resize", () => engine.resize());
 });
+
+
+
+
+
+
+
+
+
 
 
 

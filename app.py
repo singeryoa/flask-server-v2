@@ -85,6 +85,7 @@ def serve_assets(filename):
 @app.route('/gpt_test', methods=['POST'])
 def gpt_test():
 
+    # 서버에서 JSON이 아닌 HTML 문서를 응답해서 문제가 발생하지 않도록 반드시 JSON 으로 받기
     data = request.get_json()
     user_input = data['message']
     # user_input = request.json['message']  이 줄을 위 두 줄로 대체

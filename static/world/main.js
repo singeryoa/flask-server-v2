@@ -74,40 +74,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // NPC 클릭 → GPT 대화 시작
     npcPlane.actionManager = new BABYLON.ActionManager(scene);
-    npcPlane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
-        BABYLON.ActionManager.OnPickTrigger,
-        () => {
-            const msg = prompt("GPT에게 질문하세요:");
-            if (msg) {
-
-                fetch("/gpt_test", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ message: msg })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        alert("GPT 응답: " + data.response);
-                    })
-                    .catch(err => {
-                        alert("에러 발생: " + err);
-                    });
-
-
-                /*  
-                fetch("/gpt_test", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: `message=${encodeURIComponent(msg)}`
-                })
-                    .then(res => res.text())
-                    .then(reply => alert("GPT 응답: " + reply));
-                */
+    npcPlane.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(
+            BABYLON.ActionManager.OnPickTrigger,
+            () => {
+                document.getElementById("gptUI").style.display = "block";
+                document.getElementById("gptInput").focus();
             }
-        }
-    ));
+        )
+    );
+
 
     // avatar.glb 로드
     // SceneLoader.Append("/assets/", "avatar.glb", ...) 수정 완료됨
@@ -130,12 +106,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-    
+
     // 배경 스카이박스 생성
     // createScene() 함수 하단 또는 GLB 로딩 이후에 추가
     const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
     const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);  // skyBoxMaterial 는 변수명이므로 skyBox 로 해도 됨
-    
+
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.disableLighting = true;
     // skybox.infiniteDistance = true;     생략 가능.
@@ -162,6 +138,37 @@ window.addEventListener('DOMContentLoaded', () => {
     skybox.material = skyboxMaterial;
 
 
+
+
+    // GPT로 메시지 전송
+    window.sendToGPT = function () {
+        const msg = document.getElementById("gptInput").value;
+        if (!msg) return;
+
+        fetch("/gpt_test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg })
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert("GPT 응답: " + data.response);  // 추후 3D 텍스트로 교체 가능
+                document.getElementById("gptUI").style.display = "none";
+            })
+            .catch(err => {
+                alert("에러 발생: " + err);
+                document.getElementById("gptUI").style.display = "none";
+            });
+    }
+
+
+
+    // ESC 키 눌렀을 때 GPT UI 닫기
+    window.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            document.getElementById("gptUI").style.display = "none";
+        }
+    });
 
 
 

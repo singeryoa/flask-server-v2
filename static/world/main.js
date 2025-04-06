@@ -38,17 +38,73 @@ window.addEventListener('DOMContentLoaded', () => {
     camera.keysRight.push(68); // D
 
 
-    // VR 모드 지원
-    const xrHelperPromise = scene.createDefaultXRExperienceAsync({});
-
-    // 조명
-    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    light.intensity = 1;
-
     // 바닥
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
     ground.material = new BABYLON.StandardMaterial("groundMat", scene);
     ground.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+
+
+
+    // VR 모드 지원   아래는 기존 코드 1줄.  그 아래는 퀘스트 콘트롤러로 텔레포트 이동 기능.
+    // 주의: ground 객체는 미리 BABYLON.MeshBuilder.CreateGround(...)로 생성돼 있어야 합니다.
+    // const xrHelperPromise = scene.createDefaultXRExperienceAsync({});
+    const xrHelperPromise = scene.createDefaultXRExperienceAsync().then((xrHelper) => {
+        const featuresManager = xrHelper.baseExperience.featuresManager;
+        featuresManager.enableFeature(BABYLON.WebXRFeatureName.TELEPORTATION, 'stable', {
+            floorMeshes: [ground]  // 바닥으로 설정한 메시. 여기 위 const ground 변수 이름 변경 시 여기도 변경해야함
+        });
+    });
+
+    
+    // 텔레포트를 위한 새로운 바닥 메시를 만들 경우, 아래 코드 이용. 기존 ground 메시 위에 투명 처리.
+    /*
+    const teleportFloor = BABYLON.MeshBuilder.CreateGround("teleFloor", { width: 20, height: 20 }, scene);
+    teleportFloor.position.y = 0.01;  // 기존 메시와 겹칠 경우 살짝 위로
+    teleportFloor.isVisible = false; // 플레이어 눈에는 안 보이게
+
+
+    const xrHelperPromise = scene.createDefaultXRExperienceAsync().then((xrHelper) => {
+        const featuresManager = xrHelper.baseExperience.featuresManager;
+        featuresManager.enableFeature(BABYLON.WebXRFeatureName.TELEPORTATION, 'stable', {
+            floorMeshes: [teleportFloor]  
+        });
+    });
+    */
+
+
+
+
+
+    // 퀘스트에서 Web Speech API를 지원하는 환경에서만 음성 인식 실행
+    // Meta Quest 브라우저(VR 모드 포함)에서는 기본적으로 SpeechRecognition이 동작하지 않습니다. 대안으로:
+    // 퀘스트 내 Wolvic 브라우저 설치 시 가능
+    document.getElementById("voiceBtn").addEventListener("click", () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "ko-KR";
+        recognition.start();
+
+        recognition.onresult = (event) => {
+            const msg = event.results[0][0].transcript;
+            document.getElementById("gptInput").value = msg;
+        };
+
+        recognition.onerror = (event) => {
+            alert("음성 인식 에러: " + event.error);
+        };
+    });
+
+
+
+
+    // 조명
+    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    light.intensity = 1;
 
 
     // Babylon.js 씬 최적화

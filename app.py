@@ -18,7 +18,11 @@ import tempfile
 import base64
 
 from flask_cors import CORS
-app = Flask(__name__) 
+
+app = Flask(__name__, static_url_path="", static_folder="static")
+# app = Flask(__name__)  위로 변경.
+# Flask에서 static 경로를 root처럼 사용하게 만들기
+
 CORS(app)
 
 
@@ -45,9 +49,7 @@ load_dotenv()
 # 최신 OpenAI()   에서는 자동으로 환경변수 사용하므로 아래 1줄은 생략 가능
 # openai.api_key = os.getenv("OPENAI_API_KEY")  
 
-app = Flask(__name__, static_url_path="", static_folder="static")
-# app = Flask(__name__)  위로 변경.
-# Flask에서 static 경로를 root처럼 사용하게 만들기
+
 
 DB_NAME = "database.db"
 
@@ -207,7 +209,7 @@ Render의 무료 서버는 보안상 지정된 포트만 스캔해서 열려 있
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
 """
-# 이 부분을 정확히 삽입해야 render 에 발행이 됨.
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)

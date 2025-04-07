@@ -179,7 +179,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // GPT 응답 전용 평면 생성
     const gptAnswerPlane = BABYLON.MeshBuilder.CreatePlane("gptAnswerText", { width: 4, height: 2 }, scene);
-    gptAnswerPlane.position = new BABYLON.Vector3(0, 2, 5); // 카메라 앞쪽에 배치
+    gptAnswerPlane.position = new BABYLON.Vector3(0, 2, 4); // 카메라 앞쪽에 배치
     gptAnswerPlane.isVisible = true;
 
     const gptAnswerMat = new BABYLON.StandardMaterial("gptAnswerMat", scene);
@@ -231,7 +231,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             // const texture = npcMat.diffuseTexture.getContext();
             // 응답판용 ctx는 여기서 다시 가져와야 함
             const ansCtx = gptAnswerMat.diffuseTexture.getContext();
-            if (!texture) {
+            if (!ansCtx) {
                 console.error("❌ 텍스처 컨텍스트 없음");
                 return;
             }

@@ -203,6 +203,49 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
+    window.sendToGPT = function () {
+        const msg = document.getElementById("gptInput").value;
+        if (!msg) {
+            console.log("❌ 입력이 비어있음2");
+            return;
+        }
+
+        // fetch("/gpt_test",  에서 아래 경로로 변경
+        fetch("https://flask-server-v2.onrender.com/gpt_test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg })
+        })
+
+        .then(res => res.json())
+
+
+        //  GPT 응답 ui 부분 수정 부분
+        .then(data => {
+            console.log("✅ GPT 응답:", data.response);
+        
+            // GPT 응답을 gptAnswerPlane에 출력
+            const ansCtx = gptAnswerMat.diffuseTexture.getContext();
+            ansCtx.clearRect(0, 0, 512, 256);
+            ansCtx.font = "bold 26px Arial";
+            ansCtx.fillStyle = "black";
+            ansCtx.fillText(data.response, 10, 100);
+            gptAnswerMat.diffuseTexture.update();
+        
+        })
+
+        .catch(err => {
+
+            console.log("🔥 GPT 에러 발생:", err);
+            // alert("에러 발생: " + err);
+            document.getElementById("gptUI").style.display = "none";
+        });
+    }
+
+
+
+    
+
 
 
 
@@ -327,6 +370,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         .then(data => {
             console.log("✅ GPT 응답:", data.response);
         
+
+
+
+
+            /*  여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
             // 안전하게 텍스처 컨텍스트 가져오기
             const texture = npcMat.diffuseTexture.getContext();
             if (!texture) {
@@ -339,7 +387,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         
             // 텍스트 스타일 설정 및 출력
             texture.font = "bold 26px Arial";
-            texture.fillStyle = "black";
+            texture.fillStyle = "white";
+            texture.textAlign = "left"; // 기본값이긴 하지만 확실히 문자가 보이도록 명시
         
             // 너무 길 경우 줄바꿈 처리 (최대 40자 기준)
             const lines = data.response.match(/.{1,40}/g); // 40자씩 자름
@@ -349,7 +398,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         
             // 텍스처 갱신
             npcMat.diffuseTexture.update();
+            */
         
+
+
+
             // UI 숨기기
             document.getElementById("gptUI").style.display = "none";
         })

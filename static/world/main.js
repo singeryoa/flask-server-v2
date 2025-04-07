@@ -1,4 +1,8 @@
-window.addEventListener('DOMContentLoaded', () => {
+
+// 최상단에 async 함수로 전체 묶기
+// 기존 코드는 바로 아래와 같음. await 기능을 추가하며 async 함수 추가
+// window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
 
     const canvas = document.getElementById('renderCanvas');
 
@@ -45,17 +49,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // VR 모드 지원   아래는 기존 코드 1줄.  그 아래는 퀘스트 콘트롤러로 텔레포트 이동 기능.
+    // 텔레포트. VR 모드 지원   아래는 기존 코드 1줄.  그 아래는 퀘스트 콘트롤러로 텔레포트 이동 기능.
     // 주의: ground 객체는 미리 BABYLON.MeshBuilder.CreateGround(...)로 생성돼 있어야 합니다.
     // const xrHelperPromise = scene.createDefaultXRExperienceAsync({});
-    const xrHelperPromise = scene.createDefaultXRExperienceAsync().then((xrHelper) => {
-        const featuresManager = xrHelper.baseExperience.featuresManager;
-        featuresManager.enableFeature(BABYLON.WebXRFeatureName.TELEPORTATION, 'stable', {
-            floorMeshes: [ground]  // 바닥으로 설정한 메시. 여기 위 const ground 변수 이름 변경 시 여기도 변경해야함
-        });
+    const xrHelper = await scene.createDefaultXRExperienceAsync({
+        floorMeshes: [ground]  // 기존 바닥 메쉬를 지정해줘야 텔레포트 가능
     });
+    xrHelper.teleportation.enabled = true;
 
-    
+
+
     // 텔레포트를 위한 새로운 바닥 메시를 만들 경우, 아래 코드 이용. 기존 ground 메시 위에 투명 처리.
     /*
     const teleportFloor = BABYLON.MeshBuilder.CreateGround("teleFloor", { width: 20, height: 20 }, scene);
@@ -74,7 +77,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-
+    /*  
     // 퀘스트에서 Web Speech API를 지원하는 환경에서만 음성 인식 실행
     // Meta Quest 브라우저(VR 모드 포함)에서는 기본적으로 SpeechRecognition이 동작하지 않습니다. 대안으로:
     // 퀘스트 내 Wolvic 브라우저 설치 시 가능
@@ -98,7 +101,7 @@ window.addEventListener('DOMContentLoaded', () => {
             alert("음성 인식 에러: " + event.error);
         };
     });
-
+    */
 
 
 
@@ -139,6 +142,19 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         )
     );
+
+    // VR 모드 내에서 마우스 클릭 이벤트 (onPointerPick)가 동작하지 않을 수 있음
+    // 대신 WebXRControllerPointerSelection 또는 WebXR input event를 써야 합니다
+    // Babylon.js에서 VR 모드 전용 컨트롤러 트리거 이벤트 등록 필요
+    scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh.name === "npcText") {
+            document.getElementById("gptUI").style.display = "block";
+            document.getElementById("gptInput").focus();
+        }
+    }, BABYLON.PointerEventTypes.POINTERDOWN);
+
+
+
 
 
     // avatar.glb 로드
@@ -192,6 +208,50 @@ window.addEventListener('DOMContentLoaded', () => {
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 
     skybox.material = skyboxMaterial;
+
+
+
+
+
+
+    /*
+    // Whisper 이용 시,   mp3 전송용 JavaScript (main.js 또는 별도 js 파일에 추가)
+    // 이건 클라이언트에서 음성을 녹음해서 FormData로 mp3를 전송하는 예시
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    document.getElementById("voiceBtn").addEventListener("click", async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'speech.mp3');
+
+            const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.text) {
+                document.getElementById("gptInput").value = data.text;
+            } else {
+                alert("인식 실패: " + (data.error || ''));
+            }
+        };
+
+        mediaRecorder.start();
+        setTimeout(() => mediaRecorder.stop(), 5000); // 5초 녹음 후 자동 중단
+    });
+    */
 
 
 

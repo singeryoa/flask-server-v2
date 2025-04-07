@@ -14,6 +14,20 @@ from dotenv import load_dotenv
 import openai
 from openai import OpenAI
 
+import tempfile
+import base64
+
+"""
+VSCode에선 설치하면 밑줄 없어짐	❌ Render 무료 서버에선 실행 불가
+whisper 패키지가 설치되지 않아서 밑줄 오류가 발생
+pip install git+https://github.com/openai/whisper.git
+하지만 다시 강조드리지만, Render에 배포할 목적이라면 import whisper는 전혀 사용하지 않아야 합니다.
+whisper 이용 시, 루트 폴더에 uploads 폴더 생성해야함. mp3 처리
+
+# import whisper
+"""
+
+from werkzeug.utils import secure_filename
 
 
 
@@ -143,6 +157,36 @@ def gpt_test():
     except Exception as e:
         print("🔥 GPT 처리 중 에러:", e)
         return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
+
+
+
+
+
+@app.route('/whisper', methods=['POST'])
+def whisper_recognize():
+    try:
+        # Base64로 전달된 mp3 파일을 디코딩
+        data = request.json.get('audio')
+        if not data:
+            return jsonify({'error': 'No audio data received'}), 400
+
+        audio_bytes = base64.b64decode(data)
+
+        # 임시 파일에 저장
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_audio:
+            temp_audio.write(audio_bytes)
+            temp_audio_path = temp_audio.name
+
+        # Whisper API 호출
+        import openai
+        audio_file = open(temp_audio_path, "rb")
+        transcript = openai.Audio.transcribe("whisper-1", audio_file, language="ko")
+
+        return jsonify({"text": transcript["text"]})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 

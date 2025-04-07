@@ -17,6 +17,11 @@ from openai import OpenAI
 import tempfile
 import base64
 
+from flask_cors import CORS
+app = Flask(__name__) 
+CORS(app)
+
+
 """
 VSCode에선 설치하면 밑줄 없어짐	❌ Render 무료 서버에선 실행 불가
 whisper 패키지가 설치되지 않아서 밑줄 오류가 발생

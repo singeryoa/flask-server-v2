@@ -119,6 +119,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
 
 
+
+
+
+
     // 이 바로 위의 scene이 선언된 이후에 npcMat을 선언
     // 이 아래 GPT NPC 평면 코드의 바로 위에 이 코드가 위치해야함
     const npcMat = new BABYLON.StandardMaterial("npcMat", scene);
@@ -269,11 +273,18 @@ window.addEventListener('DOMContentLoaded', async () => {
             // 텍스처 갱신
             gptAnswerMat.diffuseTexture.update();
             */
-           
+
 
             // UI 숨기기
             // document.getElementById("gptUI").style.display = "none";
         })
+
+        .catch(err => {
+
+            console.log("🔥 GPT 에러 발생:", err);
+            // alert("에러 발생: " + err);
+            document.getElementById("gptUI").style.display = "none";
+        });
     }
 
 

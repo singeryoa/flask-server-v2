@@ -260,7 +260,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
     window.sendToGPT = function () {
         const msg = document.getElementById("gptInput").value;
-        if (!msg) return;
+        if (!msg) {
+            console.log("❌ 입력이 비어있음");
+            return;
+        }
 
         // fetch("/gpt_test",  에서 아래 경로로 변경
         fetch("https://flask-server-v2.onrender.com/gpt_test", {
@@ -268,29 +271,33 @@ window.addEventListener('DOMContentLoaded', async () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: msg })
         })
-            .then(res => res.json())
-            .then(data => {
+        .then(res => res.json())
+        .then(data => {
 
-                // 아래는 기존 윈도우 창 응답 방식
-                // alert("GPT 응답: " + data.response);  
+            // 아래는 기존 윈도우 창 응답 방식
+            // alert("GPT 응답: " + data.response);  
 
-                // 3D 텍스트 응답 방식
-                // GPT 응답을 3D 평면에 출력
-                console.log("✅ GPT 응답:", data.response);
 
-                const texture = npcMat.diffuseTexture.getContext();
-                texture.clearRect(0, 0, 512, 256);
-                texture.font = "bold 26px Arial";
-                texture.fillStyle = "black";
-                texture.fillText(data.response, 10, 100);
-                npcMat.diffuseTexture.update();
 
-                document.getElementById("gptUI").style.display = "none";
-            })
-            .catch(err => {
-                alert("에러 발생: " + err);
-                document.getElementById("gptUI").style.display = "none";
-            });
+            // 3D 텍스트 응답 방식
+            // GPT 응답을 3D 평면에 출력
+            console.log("✅ GPT 응답:", data.response);
+
+            const texture = npcMat.diffuseTexture.getContext();
+            texture.clearRect(0, 0, 512, 256);
+            texture.font = "bold 26px Arial";
+            texture.fillStyle = "black";
+            texture.fillText(data.response, 10, 100);
+            npcMat.diffuseTexture.update();
+
+            document.getElementById("gptUI").style.display = "none";
+        })
+        .catch(err => {
+
+            console.log("🔥 GPT 에러 발생:", err);
+            // alert("에러 발생: " + err);
+            document.getElementById("gptUI").style.display = "none";
+        });
     }
 
 
@@ -305,6 +312,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById("gptInput").addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
             e.preventDefault(); // 기본 엔터 동작 방지 (폼 제출 방지)
+            console.log("⏎ 엔터 입력 감지됨");
             sendToGPT();        // 우리가 정의한 GPT 전송 함수 호출
         }
     });

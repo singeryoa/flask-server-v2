@@ -10,10 +10,10 @@ from flask import (
 import sqlite3, os
 from dotenv import load_dotenv
 
+import openai   
 # 최신 OpenAI > 아래 두 줄은 최신 OpenAI 이용을 위한 임포트
-# import openai   이건 구형이므로 생략
-from openai import OpenAI
-client = OpenAI()  # 자동으로 환경변수에서 API 키 사용
+# from openai import OpenAI
+# client = OpenAI()  # 자동으로 환경변수에서 API 키 사용
 
 
 import tempfile
@@ -45,7 +45,7 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 # 최신 OpenAI()   에서는 자동으로 환경변수 사용하므로 아래 1줄은 생략 가능
-# openai.api_key = os.getenv("OPENAI_API_KEY")  
+openai.api_key = os.getenv("OPENAI_API_KEY")  
 
 
 
@@ -141,7 +141,36 @@ def serve_assets(filename):
     return send_from_directory("static/world/assets", filename)
 
 
-# 최신 OpenAI 적용 /gpt_test 라우터
+
+# OpenAI 0.28 구버전 적용시 사용
+@app.route("/gpt_test", methods=["POST"])
+def gpt_test():
+    try:
+        data = request.get_json()
+        print("💬 수신된 메시지:", data)
+        user_input = data["message"]
+
+        openai.api_key = os.getenv("OPENAI_API_KEY")  # 명시해도 무방
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "당신은 한국어로만 답변하는 GPT입니다."},
+                {"role": "user", "content": user_input}
+            ]
+        )
+
+        return jsonify({"response": response["choices"][0]["message"]["content"]})
+    except Exception as e:
+        print("🔥 GPT 처리 중 에러:", e)
+        return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
+
+
+
+
+
+"""
+# 최신 OpenAI 1.0 적용 /gpt_test 라우터
 @app.route('/gpt_test', methods=['POST'])
 def gpt_test():
     try:
@@ -162,7 +191,7 @@ def gpt_test():
     except Exception as e:
         print("🔥 GPT 처리 중 에러:", e)
         return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
-
+"""
 
 
 

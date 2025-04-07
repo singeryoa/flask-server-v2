@@ -188,11 +188,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerPlane.material = gptAnswerMat;
 
     const ansCtx = gptAnswerMat.diffuseTexture.getContext();
-    ansCtx.clearRect(0, 0, 512, 256);
-    ansCtx.font = "bold 32px Arial";
-    ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
-    ansCtx.textAlign = "center";
-    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 256, 130); // 가운데 정렬로 위치 조정
+    // ansCtx.clearRect(0, 0, 512, 256);
+    // ansCtx.font = "bold 22px Arial";
+    // ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
+    // ansCtx.textAlign = "left";
+    // ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 256, 130); // 가운데 정렬로 위치 조정
 
     // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.
     // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
@@ -220,26 +220,42 @@ window.addEventListener('DOMContentLoaded', async () => {
         .then(res => res.json())
 
 
+
         //  GPT 응답 ui 부분 수정 부분
         .then(data => {
-            console.log("✅ GPT 응답:", data.response);
+            console.log("✅ GPT 응답하기 2 :", data.response);
         
-            // GPT 응답을 gptAnswerPlane에 출력
-            const ansCtx = gptAnswerMat.diffuseTexture.getContext();
-            ansCtx.clearRect(0, 0, 512, 256);
-            ansCtx.font = "bold 26px Arial";
-            ansCtx.fillStyle = "black";
-            ansCtx.fillText(data.response, 10, 100);
-            gptAnswerMat.diffuseTexture.update();
+
+
+            // 여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
+            // 안전하게 텍스처 컨텍스트 가져오기
+            const texture = npcMat.diffuseTexture.getContext();
+            if (!texture) {
+                console.error("❌ 텍스처 컨텍스트 없음");
+                return;
+            }
         
+            // 텍스트 출력 전 clear
+            texture.clearRect(0, 0, 512, 256);
+        
+            // 텍스트 스타일 설정 및 출력
+            texture.font = "bold 22px Arial";
+            texture.fillStyle = "white";
+            texture.textAlign = "left"; // 기본값이긴 하지만 확실히 문자가 보이도록 명시
+        
+            // 너무 길 경우 줄바꿈 처리 (최대 40자 기준)
+            const lines = data.response.match(/.{1,20}/g); // 40자씩 자름
+            lines.forEach((line, index) => {
+                texture.fillText(line, 10, 40 + index * 30);
+            });
+        
+            // 텍스처 갱신
+            npcMat.diffuseTexture.update();
+            
+
+            // UI 숨기기
+            // document.getElementById("gptUI").style.display = "none";
         })
-
-        .catch(err => {
-
-            console.log("🔥 GPT 에러 발생:", err);
-            // alert("에러 발생: " + err);
-            document.getElementById("gptUI").style.display = "none";
-        });
     }
 
 
@@ -386,12 +402,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             texture.clearRect(0, 0, 512, 256);
         
             // 텍스트 스타일 설정 및 출력
-            texture.font = "bold 26px Arial";
+            texture.font = "bold 22px Arial";
             texture.fillStyle = "white";
             texture.textAlign = "left"; // 기본값이긴 하지만 확실히 문자가 보이도록 명시
         
             // 너무 길 경우 줄바꿈 처리 (최대 40자 기준)
-            const lines = data.response.match(/.{1,40}/g); // 40자씩 자름
+            const lines = data.response.match(/.{1,20}/g); // 40자씩 자름
             lines.forEach((line, index) => {
                 texture.fillText(line, 10, 40 + index * 30);
             });

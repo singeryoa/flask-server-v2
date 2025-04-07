@@ -192,7 +192,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     ansCtx.font = "bold 22px Arial";
     ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
     ansCtx.textAlign = "left";
-    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 256, 130); // 가운데 정렬로 위치 조정
+    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
 
     // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.
     // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
@@ -226,10 +226,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             console.log("✅ GPT 응답하기 2 :", data.response);
         
 
-
             // 여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
             // 안전하게 텍스처 컨텍스트 가져오기
-            const texture = npcMat.diffuseTexture.getContext();
+            // const texture = npcMat.diffuseTexture.getContext();
+            // 응답판용 ctx는 여기서 다시 가져와야 함
+            const ansCtx = gptAnswerMat.diffuseTexture.getContext();
             if (!texture) {
                 console.error("❌ 텍스처 컨텍스트 없음");
                 return;

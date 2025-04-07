@@ -270,7 +270,21 @@ window.addEventListener('DOMContentLoaded', async () => {
         })
             .then(res => res.json())
             .then(data => {
-                alert("GPT 응답: " + data.response);  // 추후 3D 텍스트로 교체 가능
+
+                // 아래는 기존 윈도우 창 응답 방식
+                // alert("GPT 응답: " + data.response);  
+
+                // 3D 텍스트 응답 방식
+                // GPT 응답을 3D 평면에 출력
+                console.log("✅ GPT 응답:", data.response);
+
+                const texture = npcMat.diffuseTexture.getContext();
+                texture.clearRect(0, 0, 512, 256);
+                texture.font = "bold 26px Arial";
+                texture.fillStyle = "black";
+                texture.fillText(data.response, 10, 100);
+                npcMat.diffuseTexture.update();
+
                 document.getElementById("gptUI").style.display = "none";
             })
             .catch(err => {
@@ -278,6 +292,23 @@ window.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById("gptUI").style.display = "none";
             });
     }
+
+
+
+
+
+
+
+
+    // 퀘스트 vr모드 용 입력 후 엔터 키 작동 법
+    // 엔터 키 입력 시 자동 전송
+    document.getElementById("gptInput").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault(); // 기본 엔터 동작 방지 (폼 제출 방지)
+            sendToGPT();        // 우리가 정의한 GPT 전송 함수 호출
+        }
+    });
+
 
 
 

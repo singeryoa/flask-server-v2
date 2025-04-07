@@ -188,11 +188,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerPlane.material = gptAnswerMat;
 
     const ansCtx = gptAnswerMat.diffuseTexture.getContext();
-    // ansCtx.clearRect(0, 0, 512, 256);
-    // ansCtx.font = "bold 22px Arial";
-    // ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
-    // ansCtx.textAlign = "left";
-    // ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 256, 130); // 가운데 정렬로 위치 조정
+    ansCtx.clearRect(0, 0, 512, 256);
+    ansCtx.font = "bold 22px Arial";
+    ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
+    ansCtx.textAlign = "left";
+    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 256, 130); // 가운데 정렬로 위치 조정
 
     // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.
     // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
@@ -246,11 +246,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             // 너무 길 경우 줄바꿈 처리 (최대 40자 기준)
             const lines = data.response.match(/.{1,20}/g); // 40자씩 자름
             lines.forEach((line, index) => {
-                texture.fillText(line, 10, 40 + index * 30);
+                ansCtx.fillText(line, 10, 40 + index * 30);
             });
         
             // 텍스처 갱신
-            npcMat.diffuseTexture.update();
+            gptAnswerMat.diffuseTexture.update();
             
 
             // UI 숨기기

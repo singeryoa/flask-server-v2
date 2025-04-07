@@ -11,8 +11,10 @@ import sqlite3, os
 from dotenv import load_dotenv
 
 # 최신 OpenAI > 아래 두 줄은 최신 OpenAI 이용을 위한 임포트
-import openai
+# import openai   이건 구형이므로 생략
 from openai import OpenAI
+client = OpenAI()  # 자동으로 환경변수에서 API 키 사용
+
 
 import tempfile
 import base64
@@ -38,10 +40,6 @@ whisper 이용 시, 루트 폴더에 uploads 폴더 생성해야함. mp3 처리
 
 from werkzeug.utils import secure_filename
 
-
-
-# 최신 OpenAI
-client = OpenAI()  # 자동으로 환경변수에서 API 키 사용
 
 
 load_dotenv()

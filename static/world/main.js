@@ -369,6 +369,15 @@ window.addEventListener('DOMContentLoaded', async () => {
             lines.forEach((line, index) => {
                 texture.fillText(line, 10, 40 + index * 30);
             });
+
+
+            // ✅ 퀘스트 VR 브라우저 응답 대응용 추가 설정
+            gptAnswerTex.hasAlpha = true;
+            gptAnswerTex._texture.isReady = true;
+
+            // ✅ 반드시 update 호출
+            gptAnswerTex.update();
+
         
             // 텍스처 갱신
             npcMat.diffuseTexture.update();

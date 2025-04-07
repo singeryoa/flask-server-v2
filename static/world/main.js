@@ -187,11 +187,19 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerPlane.isVisible = true;
 
     const gptAnswerMat = new BABYLON.StandardMaterial("gptAnswerMat", scene);
-    gptAnswerMat.diffuseTexture = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false);
+
+    const gptAnswerTex = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false);
+    gptAnswerTex.hasAlpha = true;  // ✅ 알파 채널 허용
+
+    gptAnswerMat.diffuseTexture = gptAnswerTex;
+    gptAnswerMat.emissiveColor = new BABYLON.Color3(1, 1, 1); // ✅ 자체 발광
+
+    // gptAnswerMat.diffuseTexture = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false);
 
     gptAnswerPlane.material = gptAnswerMat;
 
-    const ansCtx = gptAnswerMat.diffuseTexture.getContext();
+    // const ansCtx = gptAnswerMat.diffuseTexture.getContext();
+    const ansCtx = gptAnswerTex.getContext();
     ansCtx.clearRect(0, 0, 512, 256);
     ansCtx.font = "bold 22px Arial";
     ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
@@ -245,7 +253,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                 lines.forEach((line, index) => {
                     ansCtx.fillText(line, 10, 40 + index * 30);
                 });
-                gptAnswerMat.diffuseTexture.update();
+                // gptAnswerMat.diffuseTexture.update();
+                gptAnswerTex.update();
             }
 
 

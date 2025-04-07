@@ -126,20 +126,30 @@ window.addEventListener('DOMContentLoaded', async () => {
     
 
 
-    // GPT NPC 평면
+    // GPT NPC 입력 평면
     const npcPlane = BABYLON.MeshBuilder.CreatePlane("npcText", { width: 4, height: 2 }, scene);
-    npcPlane.position = new BABYLON.Vector3(0, 2, 0);
+    npcPlane.position = new BABYLON.Vector3(0, 2, 5);  // 카메라 앞쪽으로 바꿈
+    npcPlane.isVisible = true;     // 혹시 모르니 명시적으로 true 설정
     
+
+
     // 아래 2줄 위치가 글로벌 변수처럼럼 상단으로 이동됨
     // const npcMat = new BABYLON.StandardMaterial("npcMat", scene);
     // npcMat.diffuseTexture = new BABYLON.DynamicTexture("npcTextTex", { width: 512, height: 256 }, scene, false);
     
     npcPlane.material = npcMat;
     const ctx = npcMat.diffuseTexture.getContext();
-    ctx.font = "bold 26px Arial";
+    if (!ctx) {
+        console.error("❌ 텍스처 컨텍스트를 가져올 수 없습니다.");
+        return;
+    }
+    ctx.font = "bold 28px Arial";
     ctx.fillStyle = "black";
-    ctx.fillText("GPT NPC: 클릭하면 대화 시작!", 10, 100);
+    ctx.fillText("텍스트 출력 성공!", 10, 100);
     npcMat.diffuseTexture.update();
+
+
+
 
     // NPC 클릭 → GPT 대화 시작
     npcPlane.actionManager = new BABYLON.ActionManager(scene);
@@ -162,6 +172,28 @@ window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById("gptInput").focus();
         }
     }, BABYLON.PointerEventTypes.POINTERDOWN);
+
+
+    
+
+
+    // GPT 응답 전용 평면 생성
+    const gptAnswerPlane = BABYLON.MeshBuilder.CreatePlane("gptAnswerText", { width: 4, height: 2 }, scene);
+    gptAnswerPlane.position = new BABYLON.Vector3(0, 2, 6); // 카메라 앞쪽에 배치
+    gptAnswerPlane.isVisible = true;
+
+    const gptAnswerMat = new BABYLON.StandardMaterial("gptAnswerMat", scene);
+    gptAnswerMat.diffuseTexture = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false);
+
+    gptAnswerPlane.material = gptAnswerMat;
+
+    const ansCtx = gptAnswerMat.diffuseTexture.getContext();
+    ansCtx.font = "bold 28px Arial";
+    ansCtx.fillStyle = "black";
+    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100);
+    gptAnswerMat.diffuseTexture.update();
+
+
 
 
 

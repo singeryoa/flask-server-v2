@@ -230,6 +230,22 @@ window.addEventListener('DOMContentLoaded', async () => {
             // 안전하게 텍스처 컨텍스트 가져오기
             // const texture = npcMat.diffuseTexture.getContext();
             // 응답판용 ctx는 여기서 다시 가져와야 함
+
+            const ansCtx = gptAnswerMat.diffuseTexture.getContext();
+            if (ansCtx) {
+                ansCtx.clearRect(0, 0, 512, 256);
+                ansCtx.font = "bold 22px Arial";
+                ansCtx.fillStyle = "white";
+                ansCtx.textAlign = "left";
+                const lines = data.response.match(/.{1,20}/g);
+                lines.forEach((line, index) => {
+                    ansCtx.fillText(line, 10, 40 + index * 30);
+                });
+                gptAnswerMat.diffuseTexture.update();
+            }
+
+
+            /*
             const ansCtx = gptAnswerMat.diffuseTexture.getContext();
             if (!ansCtx) {
                 console.error("❌ 텍스처 컨텍스트 없음");
@@ -252,7 +268,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         
             // 텍스처 갱신
             gptAnswerMat.diffuseTexture.update();
-            
+            */
+           
 
             // UI 숨기기
             // document.getElementById("gptUI").style.display = "none";

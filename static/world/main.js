@@ -374,7 +374,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
-            /*  여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
+            // 여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
             // 안전하게 텍스처 컨텍스트 가져오기
             const texture = npcMat.diffuseTexture.getContext();
             if (!texture) {
@@ -398,7 +398,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         
             // 텍스처 갱신
             npcMat.diffuseTexture.update();
-            */
+            
         
 
 

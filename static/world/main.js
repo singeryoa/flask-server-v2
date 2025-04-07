@@ -128,7 +128,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // GPT NPC 입력 평면
     const npcPlane = BABYLON.MeshBuilder.CreatePlane("npcText", { width: 4, height: 2 }, scene);
-    npcPlane.position = new BABYLON.Vector3(0, 2, 5);  // 카메라 앞쪽으로 바꿈
+    npcPlane.position = new BABYLON.Vector3(0, 2, 8);  // 카메라 앞쪽으로 바꿈
     npcPlane.isVisible = true;     // 혹시 모르니 명시적으로 true 설정
     
 
@@ -144,7 +144,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     ctx.font = "bold 28px Arial";
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "white";
     ctx.fillText("텍스트 출력 성공!", 10, 100);
     npcMat.diffuseTexture.update();
 
@@ -174,12 +174,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     }, BABYLON.PointerEventTypes.POINTERDOWN);
 
 
-    
+
 
 
     // GPT 응답 전용 평면 생성
     const gptAnswerPlane = BABYLON.MeshBuilder.CreatePlane("gptAnswerText", { width: 4, height: 2 }, scene);
-    gptAnswerPlane.position = new BABYLON.Vector3(0, 2, 6); // 카메라 앞쪽에 배치
+    gptAnswerPlane.position = new BABYLON.Vector3(0, 2, 5); // 카메라 앞쪽에 배치
     gptAnswerPlane.isVisible = true;
 
     const gptAnswerMat = new BABYLON.StandardMaterial("gptAnswerMat", scene);
@@ -188,10 +188,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerPlane.material = gptAnswerMat;
 
     const ansCtx = gptAnswerMat.diffuseTexture.getContext();
-    ansCtx.font = "bold 28px Arial";
-    ansCtx.fillStyle = "black";
-    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100);
+    ansCtx.clearRect(0, 0, 512, 256);
+    ansCtx.font = "bold 32px Arial";
+    ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
+    ansCtx.textAlign = "center";
+    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 256, 130); // 가운데 정렬로 위치 조정
+
+    // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.
+    // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
+    gptAnswerMat.diffuseTexture.update();   // 두 번 호출해도 무방
     gptAnswerMat.diffuseTexture.update();
+
 
 
 

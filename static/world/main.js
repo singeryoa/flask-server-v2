@@ -186,6 +186,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerPlane.position = new BABYLON.Vector3(0, 2, 4); // 카메라 앞쪽에 배치
     gptAnswerPlane.isVisible = true;
 
+    /* 
+    렌더링 순서 조정: 텍스처를 사용하는 메쉬의 renderingGroupId를 설정하여 렌더링 순서를 조정
+    예를 들어, 응답판이 다른 객체들보다 나중에 렌더링되도록 설정
+    이때, 다른 메쉬들의 renderingGroupId는 기본값인 0으로 유지됩니다.
+    */
+    gptAnswerPlane.renderingGroupId = 1;
+
     const gptAnswerMat = new BABYLON.StandardMaterial("gptAnswerMat", scene);
 
     const gptAnswerTex = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false);
@@ -194,6 +201,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerMat.diffuseTexture = gptAnswerTex;
     gptAnswerMat.emissiveColor = new BABYLON.Color3(1, 1, 1); // ✅ 자체 발광
 
+    // 텍스처의 invertY 속성 확인: 텍스처가 뒤집혀 보이는 경우 invertY 속성을 false로 설정하여 Y축 반전을 방지
+    gptAnswerMat.diffuseTexture = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, false);
     // gptAnswerMat.diffuseTexture = new BABYLON.DynamicTexture("gptAnswerTex", { width: 512, height: 256 }, scene, false);
 
     gptAnswerPlane.material = gptAnswerMat;
@@ -210,6 +219,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
     gptAnswerMat.diffuseTexture.update();   // 두 번 호출해도 무방
     gptAnswerMat.diffuseTexture.update();
+    gptAnswerMat.diffuseTexture.needsUpdate = true;
 
 
 
@@ -397,7 +407,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                 lines.forEach((line, index) => {
                     ansCtx.fillText(line, 10, 40 + index * 30);
                 });
-                gptAnswerMat.diffuseTexture.update();
+
+                scene.onBeforeRenderObservable.add(() => {
+                    gptAnswerMat.diffuseTexture.update();     // 여기에 위아래에 저렇게 감쌌음
+                });
             }
         
         

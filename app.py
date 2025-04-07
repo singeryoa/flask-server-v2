@@ -6,6 +6,7 @@ from flask import (
     url_for,
     send_from_directory,
     jsonify,
+    send_file,
 )
 import sqlite3, os
 from dotenv import load_dotenv
@@ -192,6 +193,21 @@ def gpt_test():
         print("🔥 GPT 처리 중 에러:", e)
         return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
 """
+
+
+
+
+
+# 주의: static/audio/response.mp4 파일이 미리 존재해야 함
+# (→ 이 부분은 향후 TTS 결과를 mp4로 변환하는 자동화 추가 가능) 
+
+@app.route("/gpt_video")
+def gpt_video():
+    # static 폴더 내 mp4 파일 경로
+    video_path = os.path.join("static", "audio", "response.mp4")
+    return send_file(video_path, mimetype="video/mp4")
+
+
 
 
 

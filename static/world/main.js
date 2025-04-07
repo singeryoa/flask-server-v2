@@ -419,6 +419,27 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             // UI 숨기기
             document.getElementById("gptUI").style.display = "none";
+
+
+
+            // Babylon.js: 응답 영상 재생 기능 추가
+            // 영상 텍스처 재생용 plane 생성 (최초 1회만)
+            if (!window.videoPlane) {
+                const videoTexture = new BABYLON.VideoTexture("gptVideo", "https://flask-server-v2.onrender.com/gpt_video", scene, true);
+                const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
+                videoMaterial.diffuseTexture = videoTexture;
+
+                const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
+                plane.position = new BABYLON.Vector3(0, 2, 0);  // 카메라 앞쪽
+                plane.material = videoMaterial;
+
+                window.videoPlane = plane;
+                window.videoTexture = videoTexture;
+            } else {
+                window.videoTexture.video.currentTime = 0;
+                window.videoTexture.video.play();
+            }
+
         })
         
 

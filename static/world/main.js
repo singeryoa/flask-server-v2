@@ -2,6 +2,8 @@
 // 최상단에 async 함수로 전체 묶기
 // 기존 코드는 바로 아래와 같음. await 기능을 추가하며 async 함수 추가
 // window.addEventListener('DOMContentLoaded', () => {
+
+
 window.addEventListener('DOMContentLoaded', async () => {
 
     const canvas = document.getElementById('renderCanvas');
@@ -117,13 +119,21 @@ window.addEventListener('DOMContentLoaded', async () => {
     engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
 
 
+    // 이 바로 위의 scene이 선언된 이후에 npcMat을 선언
+    // 이 아래 GPT NPC 평면 코드의 바로 위에 이 코드가 위치해야함
+    const npcMat = new BABYLON.StandardMaterial("npcMat", scene);
+    npcMat.diffuseTexture = new BABYLON.DynamicTexture("npcTextTex", { width: 512, height: 256 }, scene, false);
+    
 
 
     // GPT NPC 평면
     const npcPlane = BABYLON.MeshBuilder.CreatePlane("npcText", { width: 4, height: 2 }, scene);
     npcPlane.position = new BABYLON.Vector3(0, 2, 0);
-    const npcMat = new BABYLON.StandardMaterial("npcMat", scene);
-    npcMat.diffuseTexture = new BABYLON.DynamicTexture("npcTextTex", { width: 512, height: 256 }, scene, false);
+    
+    // 아래 2줄 위치가 글로벌 변수처럼럼 상단으로 이동됨
+    // const npcMat = new BABYLON.StandardMaterial("npcMat", scene);
+    // npcMat.diffuseTexture = new BABYLON.DynamicTexture("npcTextTex", { width: 512, height: 256 }, scene, false);
+    
     npcPlane.material = npcMat;
     const ctx = npcMat.diffuseTexture.getContext();
     ctx.font = "bold 26px Arial";
@@ -272,6 +282,47 @@ window.addEventListener('DOMContentLoaded', async () => {
             body: JSON.stringify({ message: msg })
         })
         .then(res => res.json())
+
+
+        //  GPT 응답 ui 부분 수정 부분
+        .then(data => {
+            console.log("✅ GPT 응답:", data.response);
+        
+            // 안전하게 텍스처 컨텍스트 가져오기
+            const texture = npcMat.diffuseTexture.getContext();
+            if (!texture) {
+                console.error("❌ 텍스처 컨텍스트 없음");
+                return;
+            }
+        
+            // 텍스트 출력 전 clear
+            texture.clearRect(0, 0, 512, 256);
+        
+            // 텍스트 스타일 설정 및 출력
+            texture.font = "bold 26px Arial";
+            texture.fillStyle = "black";
+        
+            // 너무 길 경우 줄바꿈 처리 (최대 40자 기준)
+            const lines = data.response.match(/.{1,40}/g); // 40자씩 자름
+            lines.forEach((line, index) => {
+                texture.fillText(line, 10, 40 + index * 30);
+            });
+        
+            // 텍스처 갱신
+            npcMat.diffuseTexture.update();
+        
+            // UI 숨기기
+            document.getElementById("gptUI").style.display = "none";
+        })
+        
+
+        
+
+
+
+
+        // 기존 GPT 응답 UI 부분이 출력되지 않음에 따라 위로 대체
+        /*  
         .then(data => {
 
             // 아래는 기존 윈도우 창 응답 방식
@@ -292,6 +343,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             document.getElementById("gptUI").style.display = "none";
         })
+        */
+
         .catch(err => {
 
             console.log("🔥 GPT 에러 발생:", err);

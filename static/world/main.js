@@ -249,10 +249,14 @@ window.addEventListener('DOMContentLoaded', async () => {
         video.muted = true;
         video.playsInline = true;  // iOS 대응
         // window.videoElement = video;      //  뒤로 옮김
+
+        /* 
         video.addEventListener("loadeddata", () => {
             console.log("🎬 비디오 로드 완료");
             // video.play();  sendGPT 구문 내로 이동됨
         });
+        */
+
         console.log("📦 비디오 엘리먼트 생성:", video);
         showDebug("📦 비디오 엘리먼트트 생성:");
     
@@ -572,6 +576,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (window.videoElement) {
                 window.videoElement.currentTime = 0;
                 window.videoElement.play();
+                showDebug("🟢 영상 플레이 완료");
             }
 
             // 위 3줄로 변경

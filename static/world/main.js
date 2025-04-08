@@ -282,14 +282,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log("📺 비디오 평면 생성 시작");
         showDebug("📺 비디오 평면 생성 시작");
     
-        videoPlane.renderingGroupId = 2;    // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
-
+        
         // 5. 윈도우에 저장
         window.videoPlane = plane;
         window.videoTexture = videoTexture;
         window.videoElement = video;          // 앞에서 이 위치로 옮김
         console.log("📦 윈도우에 저장");
         showDebug("📦 윈도우에 저장:");
+
+        window.videoPlane.renderingGroupId = 2;   // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
     
         // 6. 사용자 클릭 시 재생 트리거
         // 일단 생략

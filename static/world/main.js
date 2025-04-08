@@ -222,8 +222,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     ansCtx.font = "bold 22px Arial";
     ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
     ansCtx.textAlign = "left";
-    */
     ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
+    */
+    
     
 
     // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.

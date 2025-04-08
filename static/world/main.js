@@ -216,12 +216,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     gptAnswerPlane.material = gptAnswerMat;
 
     // const ansCtx = gptAnswerMat.diffuseTexture.getContext();
+    /* 
     const ansCtx = gptAnswerTex.getContext();
     ansCtx.clearRect(0, 0, 512, 256);
     ansCtx.font = "bold 22px Arial";
     ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
     ansCtx.textAlign = "left";
     ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
+    */
 
     // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.
     // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
@@ -269,7 +271,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
         // 4. 비디오 평면 생성
         const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
-        plane.position = new BABYLON.Vector3(0, 2, 10);
+        plane.position = new BABYLON.Vector3(0, 2, 0);
         plane.material = videoMaterial;
         plane.isVisible = true;
         plane.visibility = 1;
@@ -440,6 +442,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (!texture) {
                 console.error("❌ 텍스처 컨텍스트 없음");
                 return;
+            } else {
+                console.log("✅ npc 질문 ctx 있음, 텍스트 처리 시도")
             }
         
             // 텍스트 출력 전 clear
@@ -474,11 +478,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             // 응답판 출력 (gptAnswerMat)
             const ansCtx = gptAnswerMat.diffuseTexture.getContext();
-                if (ansCtx) {
+            if (ansCtx) {
                 ansCtx.clearRect(0, 0, 512, 256);
                 ansCtx.font = "bold 22px Arial";
                 ansCtx.fillStyle = "white";
                 ansCtx.textAlign = "left";
+                ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
                 const lines = data.response.match(/.{1,20}/g);
                 lines.forEach((line, index) => {
                     ansCtx.fillText(line, 10, 40 + index * 30);
@@ -554,9 +559,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
             // GPT 응답 이후 재생만 하기 (sendToGPT() 내부)
+            // 🎬 GPT 응답 이후에만 비디오 생성 및 재생
+            
             window.videoElement.currentTime = 0;
             window.videoElement.play();
-            
+    
 
 
             /*  

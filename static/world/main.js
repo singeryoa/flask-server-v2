@@ -6,6 +6,14 @@
 
 window.addEventListener('DOMContentLoaded', async () => {
 
+    function showDebug(message) {
+        const debug = document.getElementById("debugLog");
+        if (debug) {
+            debug.innerText = message;
+        }
+    }
+    
+
     const canvas = document.getElementById('renderCanvas');
 
     // 렌더 지연 방지를 위한 BABYLON.Engine 초기화 설정
@@ -335,12 +343,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     // GPT로 메시지 전송
     // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
     window.sendToGPT = function () {
+
+        console.log("🟢 sendToGPT 함수 실행됨");
+        showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
+
         const msg = document.getElementById("gptInput").value;
         if (!msg) {
             console.log("❌ 입력이 비어있음");
             return;
         }
 
+        console.log("🟢 fetch 시작 전");
         // fetch("/gpt_test",  에서 아래 경로로 변경
         fetch("https://flask-server-v2.onrender.com/gpt_test", {
             method: "POST",
@@ -353,6 +366,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         //  GPT 응답 ui 부분 수정 부분
         .then(data => {
             console.log("✅ GPT 응답:", data.response);
+            console.log("🟢 GPT 응답 데이터 수신:", data);
         
 
 
@@ -481,10 +495,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                     video.play();
                 });
                 console.log("📦 비디오 엘리먼트 생성:", video);
+                showDebug("📦 비디오 엘리먼트트 생성:");
             
                 // 2. Babylon VideoTexture 생성
                 const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, true, true);
+                videoTexture.hasAlpha = true;
+                videoMaterial.backFaceCulling = false;  // 뒤에서도 보이게
                 console.log("📦 비디오 텍스쳐 생성:");
+                showDebug("📦 비디오 텍스쳐 생성:");
 
                 // 3. 머티리얼 생성
                 const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
@@ -494,18 +512,23 @@ window.addEventListener('DOMContentLoaded', async () => {
                 videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
 
                 console.log("📦 비디오 머티리얼 생성:", video);
+                showDebug("📦 비디오 머티리얼얼 생성:");
             
                 // 4. 비디오 평면 생성
                 const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
                 plane.position = new BABYLON.Vector3(0, 2, 10);
                 plane.material = videoMaterial;
+                plane.isVisible = true;
+                plane.visibility = 1;
                 console.log("📺 비디오 평면 생성 시작");
+                showDebug("📺 비디오 평면 생성 시작");
             
                 // 5. 윈도우에 저장
                 window.videoPlane = plane;
                 window.videoTexture = videoTexture;
                 window.videoElement = video;
                 console.log("📦 윈도우에 저장");
+                showDebug("📦 윈도우에 저장장:");
             
                 // 6. 사용자 클릭 시 재생 트리거
                 scene.onPointerDown = () => {
@@ -515,7 +538,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                 };
 
                 console.log("✅ 비디오 평면 생성 완료");
-                
+                showDebug("📦 비디오 평면 생성 완료:");
+
             } else {
                 window.videoElement.currentTime = 0;
                 window.videoElement.play();
@@ -631,6 +655,16 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     engine.runRenderLoop(() => scene.render());
     window.addEventListener("resize", () => engine.resize());
+
+
+
+    function showDebug(message) {
+        const debug = document.getElementById("debugLog");
+        if (debug) {
+            debug.innerText = message;
+        }
+    }
+    
 });
 
 

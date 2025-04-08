@@ -199,7 +199,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     예를 들어, 응답판이 다른 객체들보다 나중에 렌더링되도록 설정
     이때, 다른 메쉬들의 renderingGroupId는 기본값인 0으로 유지됩니다.
     */
-    gptAnswerPlane.renderingGroupId = 1;
+    gptAnswerPlane.renderingGroupId = 1;    //  응답판 렌더링 순서
 
     const gptAnswerMat = new BABYLON.StandardMaterial("gptAnswerMat", scene);
 
@@ -251,7 +251,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         // window.videoElement = video;      //  뒤로 옮김
         video.addEventListener("loadeddata", () => {
             console.log("🎬 비디오 로드 완료");
-            video.play();
+            // video.play();  sendGPT 구문 내로 이동됨
         });
         console.log("📦 비디오 엘리먼트 생성:", video);
         showDebug("📦 비디오 엘리먼트트 생성:");
@@ -275,12 +275,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         // 4. 비디오 평면 생성
         const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
         plane.position = new BABYLON.Vector3(0, 2, 0);
+        plane.rotation.x = Math.PI;     // 회전 추가 (X축 기준 180도 뒤집기)
         plane.material = videoMaterial;
         plane.isVisible = true;
         plane.visibility = 1;
         console.log("📺 비디오 평면 생성 시작");
         showDebug("📺 비디오 평면 생성 시작");
     
+        videoPlane.renderingGroupId = 2;    // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
+
         // 5. 윈도우에 저장
         window.videoPlane = plane;
         window.videoTexture = videoTexture;
@@ -661,9 +664,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 퀘스트 vr모드 용 입력 후 엔터 키 작동 법
     // 엔터 키 입력 시 자동 전송
     document.getElementById("gptInput").addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" || e.key === "y" || e.key === "Y") {    // 임시로 Y 키 입력 테스트
             e.preventDefault(); // 기본 엔터 동작 방지 (폼 제출 방지)
             console.log("⏎ 엔터 입력 감지됨");
+            showDebug("🟢 sendToGPT 함수 실행됨");
             sendToGPT();        // 우리가 정의한 GPT 전송 함수 호출
         }
     });

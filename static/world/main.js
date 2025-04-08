@@ -424,7 +424,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             // Babylon.js: 응답 영상 재생 기능 추가
             // 영상 텍스처 재생용 plane 생성 (최초 1회만)
-              
+            /* 
             if (!window.videoPlane) {
                 const videoTexture = new BABYLON.VideoTexture(
                     "gptVideo",
@@ -463,6 +463,48 @@ window.addEventListener('DOMContentLoaded', async () => {
                 window.videoTexture.video.currentTime = 0;
                 window.videoTexture.video.play();
             }
+            */
+
+
+
+            if (!window.videoPlane) {
+                // 1. HTMLVideoElement 직접 생성
+                const video = document.createElement("video");
+                video.src = "https://flask-server-v2.onrender.com/gpt_video";
+                video.crossOrigin = "anonymous";
+                video.loop = false;
+                video.autoplay = true;
+                video.muted = true;
+                video.playsInline = true;  // iOS 대응
+            
+                // 2. Babylon VideoTexture 생성
+                const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, true, true);
+            
+                // 3. 머티리얼 생성
+                const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
+                videoMaterial.diffuseTexture = videoTexture;
+            
+                // 4. 비디오 평면 생성
+                const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
+                plane.position = new BABYLON.Vector3(0, 2, 0);
+                plane.material = videoMaterial;
+            
+                // 5. 윈도우에 저장
+                window.videoPlane = plane;
+                window.videoTexture = videoTexture;
+                window.videoElement = video;
+            
+                // 6. 사용자 클릭 시 재생 트리거
+                scene.onPointerDown = () => {
+                    if (video.paused) {
+                        video.play();
+                    }
+                };
+            } else {
+                window.videoElement.currentTime = 0;
+                window.videoElement.play();
+            }
+            
             
 
 

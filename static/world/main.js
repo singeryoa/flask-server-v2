@@ -476,23 +476,36 @@ window.addEventListener('DOMContentLoaded', async () => {
                 video.autoplay = true;
                 video.muted = true;
                 video.playsInline = true;  // iOS 대응
+                video.addEventListener("loadeddata", () => {
+                    console.log("🎬 비디오 로드 완료");
+                    video.play();
+                });
+                console.log("📦 비디오 엘리먼트 생성:", video);
             
                 // 2. Babylon VideoTexture 생성
                 const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, true, true);
-            
+                console.log("📦 비디오 텍스쳐 생성:");
+
                 // 3. 머티리얼 생성
                 const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
                 videoMaterial.diffuseTexture = videoTexture;
+                videoMaterial.backFaceCulling = false;
+                videoMaterial.alpha = 1;
+                videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
+
+                console.log("📦 비디오 머티리얼 생성:", video);
             
                 // 4. 비디오 평면 생성
                 const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
                 plane.position = new BABYLON.Vector3(0, 2, 10);
                 plane.material = videoMaterial;
+                console.log("📺 비디오 평면 생성 시작");
             
                 // 5. 윈도우에 저장
                 window.videoPlane = plane;
                 window.videoTexture = videoTexture;
                 window.videoElement = video;
+                console.log("📦 윈도우에 저장");
             
                 // 6. 사용자 클릭 시 재생 트리거
                 scene.onPointerDown = () => {
@@ -500,6 +513,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                         video.play();
                     }
                 };
+
+                console.log("✅ 비디오 평면 생성 완료");
+                
             } else {
                 window.videoElement.currentTime = 0;
                 window.videoElement.play();

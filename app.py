@@ -336,13 +336,13 @@ if __name__ == "__main__":
 
 
 
-#  서버 테스트를 위해 잠시 생략
+#  로컬 서버 테스트를 위해 잠시 생략 가능
 
-""" 
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-"""
+
 
 
 

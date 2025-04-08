@@ -250,18 +250,21 @@ window.addEventListener('DOMContentLoaded', async () => {
         video.playsInline = true;  // iOS 대응
         // window.videoElement = video;      //  뒤로 옮김
 
-        /* 
+        
         video.addEventListener("loadeddata", () => {
-            console.log("🎬 비디오 로드 완료");
+            console.log("🎬 리스너 : loaded 데이터");
             // video.play();  sendGPT 구문 내로 이동됨
         });
-        */
+        
 
         console.log("📦 비디오 엘리먼트 생성:", video);
         showDebug("📦 비디오 엘리먼트트 생성:");
     
         // 2. Babylon VideoTexture 생성
-        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, true, true);
+        // 원인은 Babylon.js의 VideoTexture가 생성될 때 HTMLVideoElement.play()를 내부적으로 
+        // 자동 실행하는 구조 때문일 가능성이 높음.  
+        // 바로 아래 4번째 인자인 generateMipMaps = false 로 변경
+        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false, true);
         videoTexture.hasAlpha = true;
         console.log("📦 비디오 텍스쳐 생성:");
         showDebug("📦 비디오 텍스쳐 생성:");
@@ -294,8 +297,14 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log("📦 윈도우에 저장");
         showDebug("📦 윈도우에 저장:");
 
+
+        // 자동 재생 방지를 위해 명시적으로 중단
+        video.pause();
+        video.currentTime = 0;
+
         window.videoPlane.renderingGroupId = 2;   // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
     
+
         // 6. 사용자 클릭 시 재생 트리거
         // 일단 생략
         /* 
@@ -442,6 +451,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         .then(data => {
             console.log("✅ GPT 응답:", data.response);
             console.log("🟢 GPT 응답 데이터 수신:", data);
+            showDebug("🟢 GPT 응답");
         
 
 
@@ -452,9 +462,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             const texture = npcMat.diffuseTexture.getContext();
             if (!texture) {
                 console.error("❌ 텍스처 컨텍스트 없음");
+                showDebug("🟢 텍스처 컨텍스트 없음");
                 return;
             } else {
                 console.log("✅ npc 질문 ctx 있음, 텍스트 처리 시도")
+                showDebug("🟢 npc 질문 ctx 있음, 텍스트 처리 시도");
             }
         
             // 텍스트 출력 전 clear
@@ -655,6 +667,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         .catch(err => {
 
             console.log("🔥 GPT 에러 발생:", err);
+            showDebug("🟢 GPT 에러 발생");
             // alert("에러 발생: " + err);
             document.getElementById("gptUI").style.display = "none";
         });
@@ -673,7 +686,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (e.key === "Enter" || e.key === "y" || e.key === "Y") {    // 임시로 Y 키 입력 테스트
             e.preventDefault(); // 기본 엔터 동작 방지 (폼 제출 방지)
             console.log("⏎ 엔터 입력 감지됨");
-            showDebug("🟢 sendToGPT 함수 실행됨");
+            showDebug("🟢 퀘스트 내 sendToGPT 함수 실행 및 엔터 입력 감지됨");
             sendToGPT();        // 우리가 정의한 GPT 전송 함수 호출
         }
     });

@@ -471,44 +471,54 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
-
-    // Whisper 음성 녹음 버튼 클릭 시 실행
+    // OpenAI whisper api 코드.
     document.getElementById("voiceBtn").addEventListener("click", async () => {
-        logToDebug("🎤 마이크 접근 시도 중...");
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        logToDebug("✅ 마이크 접근 성공");
-        console.log("🎤 마이크 스트림:", stream);
-        const mediaRecorder = new MediaRecorder(stream);
-        const audioChunks = [];
-
-        mediaRecorder.ondataavailable = event => {
-            audioChunks.push(event.data);
-        };
-
-        mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-            const formData = new FormData();
-            formData.append('file', audioBlob, 'speech.mp3');
-
-            const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json();
-            if (data.text) {
-                document.getElementById("gptInput").value = data.text;
-                sendToGPT();  // Whisper 인식 후 자동으로 GPT 응답 요청
-            } else {
-                alert("인식 실패: " + (data.error || ''));
-            }
-        };
-
-        mediaRecorder.start();
-        setTimeout(() => mediaRecorder.stop(), 5000); // 5초 녹음
+        logToDebug("🎤 마이크 접근 시도 중 (OpenAI Whisper API)");
+    
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            const audioChunks = [];
+    
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+    
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result.split(',')[1];
+    
+                    const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ audio: base64Audio })
+                    });
+    
+                    const result = await response.json();
+                    if (result.text) {
+                        document.getElementById("gptInput").value = result.text;
+                        sendToGPT();
+                    } else {
+                        alert("음성 인식 실패: " + (result.error || ''));
+                    }
+                };
+            };
+    
+            mediaRecorder.start();
+            setTimeout(() => {
+                mediaRecorder.stop();
+            }, 5000);
+        } catch (error) {
+            console.error("🎤 마이크 접근 실패:", error);
+            alert("마이크 사용이 허용되지 않았거나 장치 오류입니다.");
+        }
     });
-
-
+    
 
 
 

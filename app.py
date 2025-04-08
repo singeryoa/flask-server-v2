@@ -24,14 +24,14 @@ from flask_cors import CORS
 
 import uuid
 # import whisper
-from faster_whisper import WhisperModel
+# from faster_whisper import WhisperModel
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 # app = Flask(__name__)  위로 변경.
 # Flask에서 static 경로를 root처럼 사용하게 만들기
 
-# Whisper 모델 로딩 (GPU 완전 차단)
-model = WhisperModel("base", device="cpu", compute_type="int8")
+# Whisper 모델 로딩 (GPU 완전 차단) faster-whisper 용용
+# model = WhisperModel("base", device="cpu", compute_type="int8")
 # model = whisper.load_model("base")  # 작은 모델부터 시작 (tiny/base/small/medium/large)
 
 # CORS(app)
@@ -232,7 +232,39 @@ def gpt_video():
 
 
 
+# OpenAI whisper API 
+@app.route("/whisper", methods=["POST"])
+def whisper_openai():
+    try:
+        # 1. 파일 받아오기
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
 
+        file = request.files['file']
+        temp_path = f"temp_{uuid.uuid4().hex}.mp3"
+        file.save(temp_path)
+
+        # 2. OpenAI Whisper API로 전송
+        import openai
+        audio_file = open(temp_path, "rb")
+        transcript = openai.Audio.transcribe("whisper-1", audio_file, language="ko")
+
+        return jsonify({"text": transcript["text"]})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+
+
+
+
+
+# fast-whisper 로컬 테스트용 
+""" 
 @app.route("/whisper", methods=["POST"])
 def whisper_transcribe():
     if 'file' not in request.files:
@@ -253,7 +285,7 @@ def whisper_transcribe():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
-
+"""
 
 
 

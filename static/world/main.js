@@ -486,7 +486,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             
                 // 4. 비디오 평면 생성
                 const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
-                plane.position = new BABYLON.Vector3(0, 2, 0);
+                plane.position = new BABYLON.Vector3(0, 2, 10);
                 plane.material = videoMaterial;
             
                 // 5. 윈도우에 저장

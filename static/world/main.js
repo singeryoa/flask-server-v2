@@ -233,7 +233,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
     
-    // ✅ 초기 로딩 시 비디오 판 생성
+    // ✅ 비디오 판 생성
 
     if (!window.videoPlane) {
         // 1. HTMLVideoElement 직접 생성
@@ -254,14 +254,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         // 2. Babylon VideoTexture 생성
         const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, true, true);
         videoTexture.hasAlpha = true;
-        videoMaterial.backFaceCulling = false;  // 뒤에서도 보이게
         console.log("📦 비디오 텍스쳐 생성:");
         showDebug("📦 비디오 텍스쳐 생성:");
 
         // 3. 머티리얼 생성
         const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
         videoMaterial.diffuseTexture = videoTexture;
-        videoMaterial.backFaceCulling = false;
+        videoMaterial.backFaceCulling = false;  // 뒤에서도 보이게
         videoMaterial.alpha = 1;
         videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
 
@@ -282,7 +281,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         window.videoTexture = videoTexture;
         window.videoElement = video;
         console.log("📦 윈도우에 저장");
-        showDebug("📦 윈도우에 저장장:");
+        showDebug("📦 윈도우에 저장:");
     
         // 6. 사용자 클릭 시 재생 트리거
         // 일단 생략

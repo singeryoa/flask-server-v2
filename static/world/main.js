@@ -424,8 +424,23 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             // Babylon.js: 응답 영상 재생 기능 추가
             // 영상 텍스처 재생용 plane 생성 (최초 1회만)
+              
             if (!window.videoPlane) {
-                const videoTexture = new BABYLON.VideoTexture("gptVideo", "https://flask-server-v2.onrender.com/gpt_video", scene, true);
+                const videoTexture = new BABYLON.VideoTexture(
+                    "gptVideo",
+                    "https://flask-server-v2.onrender.com/gpt_video",
+                    scene,
+                    true,
+                    true,
+                    BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
+                    null,
+                    {
+                        autoPlay: true,
+                        loop: false,
+                        muted: true
+                    }
+                
+                );
                 const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
                 videoMaterial.diffuseTexture = videoTexture;
 
@@ -435,10 +450,56 @@ window.addEventListener('DOMContentLoaded', async () => {
 
                 window.videoPlane = plane;
                 window.videoTexture = videoTexture;
+
+                // ✅ 바로 여기! 비디오 생성 후 위치
+                scene.onPointerDown = () => {
+                    if (videoTexture.video.paused) {
+                        videoTexture.video.play();
+                    }
+                };
+
+
             } else {
                 window.videoTexture.video.currentTime = 0;
                 window.videoTexture.video.play();
             }
+            
+
+
+            /*  
+            // 영상 테스트 코드. 영상 텍스처 재생용 plane 생성
+            // ✅ 항상 생성되도록 조건 제거
+            const videoTexture = new BABYLON.VideoTexture(
+                "gptVideo",     // string
+                "https://flask-server-v2.onrender.com/gpt_video",    // string or HTMLVideoElement
+                scene,         // BABYLON.Scene
+                true,          // boolean.   generateMipMaps
+                true,          // boolean.   invertY
+                BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,    // optional callback
+                null,          // onLoad
+                {
+                    autoPlay: true,
+                    loop: false,
+                    muted: true   // ✅ 필수: 모바일/VR에서는 muted 설정 필요
+                }
+            );
+                
+
+            const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
+            videoMaterial.diffuseTexture = videoTexture;
+
+            const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
+            plane.position = new BABYLON.Vector3(0, 2, 0);
+            plane.material = videoMaterial;
+
+            // ✅ 바로 여기! 비디오 생성 후 위치
+            scene.onPointerDown = () => {
+                if (videoTexture.video.paused) {
+                videoTexture.video.play();
+                }
+            };
+            */
+
 
         })
         

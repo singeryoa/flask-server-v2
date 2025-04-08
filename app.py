@@ -7,6 +7,7 @@ from flask import (
     send_from_directory,
     jsonify,
     send_file,
+    make_response,
 )
 import sqlite3, os
 from dotenv import load_dotenv
@@ -206,6 +207,18 @@ def gpt_video():
     # static 폴더 내 mp4 파일 경로
     video_path = os.path.join("static", "audio", "response.mp4")
     return send_file(video_path, mimetype="video/mp4")
+
+    """   
+    "https://flask-server-v2.onrender.com/gpt_video" 이 URL이 실제 mp4 파일을 반환하는지 
+    브라우저에서 직접 열어 테스트
+    정상 작동할 경우 → 브라우저에서 바로 mp4 재생돼야 함
+    CORS 문제 발생 시 → 콘솔에 CORS policy blocked 오류 나옴
+    위 링크에서 영상이 출력이 안될 경우 아래 코드 이용
+
+    response = make_response(send_file("static/response.mp4", mimetype="video/mp4"))
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+    """
 
 
 

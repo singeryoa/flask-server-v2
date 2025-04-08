@@ -222,8 +222,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     ansCtx.font = "bold 22px Arial";
     ansCtx.fillStyle = "white"; // ✅ 흰색 글씨로 잘 보이게
     ansCtx.textAlign = "left";
-    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
     */
+    ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
+    
 
     // 처음에 텍스트가 제대로 로드되지 않으면 텍스처 갱신이 안 될 수 있습니다.
     // 그럴 땐 update() 호출 전 ctx.clearRect() + update()를 두 번 호출해보는 것도 방법입니다:
@@ -238,14 +239,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     // ✅ 비디오 판 생성
 
     if (!window.videoPlane) {
-        // 1. HTMLVideoElement 직접 생성
+        // 1. HTMLVideoElement 직접 생성 (src만 지정하고 자동 재생 X)
         const video = document.createElement("video");
         video.src = "https://flask-server-v2.onrender.com/gpt_video";
         video.crossOrigin = "anonymous";
         video.loop = false;
-        video.autoplay = true;
+        video.autoplay = false;   // ❗자동 재생 금지
         video.muted = true;
         video.playsInline = true;  // iOS 대응
+        // window.videoElement = video;      //  뒤로 옮김
         video.addEventListener("loadeddata", () => {
             console.log("🎬 비디오 로드 완료");
             video.play();
@@ -281,7 +283,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         // 5. 윈도우에 저장
         window.videoPlane = plane;
         window.videoTexture = videoTexture;
-        window.videoElement = video;
+        window.videoElement = video;          // 앞에서 이 위치로 옮김
         console.log("📦 윈도우에 저장");
         showDebug("📦 윈도우에 저장:");
     
@@ -483,7 +485,6 @@ window.addEventListener('DOMContentLoaded', async () => {
                 ansCtx.font = "bold 22px Arial";
                 ansCtx.fillStyle = "white";
                 ansCtx.textAlign = "left";
-                ansCtx.fillText("✅ GPT 응답이 여기에 뜹니다!", 10, 100); // 가운데 정렬로 위치 조정
                 const lines = data.response.match(/.{1,20}/g);
                 lines.forEach((line, index) => {
                     ansCtx.fillText(line, 10, 40 + index * 30);
@@ -561,8 +562,16 @@ window.addEventListener('DOMContentLoaded', async () => {
             // GPT 응답 이후 재생만 하기 (sendToGPT() 내부)
             // 🎬 GPT 응답 이후에만 비디오 생성 및 재생
             
-            window.videoElement.currentTime = 0;
-            window.videoElement.play();
+            // GPT 응답 처리 이후, 음성 영상 재생 시작
+
+            if (window.videoElement) {
+                window.videoElement.currentTime = 0;
+                window.videoElement.play();
+            }
+
+            // 위 3줄로 변경
+            // window.videoElement.currentTime = 0;
+            // window.videoElement.play();
     
 
 

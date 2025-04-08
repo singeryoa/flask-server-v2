@@ -4,6 +4,7 @@
 // window.addEventListener('DOMContentLoaded', () => {
 
 
+
 window.addEventListener('DOMContentLoaded', async () => {
 
     function showDebug(message) {
@@ -12,6 +13,16 @@ window.addEventListener('DOMContentLoaded', async () => {
             debug.innerText = message;
         }
     }
+
+
+
+    window.addEventListener("keydown", function (event) {
+        if (event.key === "g") {
+          const gptUI = document.getElementById("gptUI");
+          gptUI.style.display = "block";
+        }
+    });
+      
     
 
     const canvas = document.getElementById('renderCanvas');
@@ -473,10 +484,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // OpenAI whisper api 코드.
     document.getElementById("voiceBtn").addEventListener("click", async () => {
-        logToDebug("🎤 마이크 접근 시도 중 (OpenAI Whisper API)");
+        logToDebug("🎤  [버튼 클릭됨] 음성 버튼 클릭 감지됨 (OpenAI Whisper API)");
+        showDebug("[버튼 클릭됨] 음성 버튼 클릭 감지됨");
     
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            logToDebug("✅ [마이크 허용됨] getUserMedia 성공");
+            console.log("🎤 마이크 stream 객체:", stream);
+            showDebug("[마이크 허용됨] getUserMedia 성공");
             const mediaRecorder = new MediaRecorder(stream);
             const audioChunks = [];
     
@@ -505,6 +520,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                         sendToGPT();
                     } else {
                         alert("음성 인식 실패: " + (result.error || ''));
+                        showDebug("음성 인식 실패패");
                     }
                 };
             };
@@ -515,7 +531,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             }, 5000);
         } catch (error) {
             console.error("🎤 마이크 접근 실패:", error);
+            logToDebug("❌ [마이크 오류] getUserMedia 실패: " + err.name + " - " + err.message);
             alert("마이크 사용이 허용되지 않았거나 장치 오류입니다.");
+            showDebug("마이크 접근 실패");
         }
     });
     
@@ -797,6 +815,28 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
+    setTimeout(() => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          logToDebug("❌ 브라우저에서 마이크 사용이 지원되지 않습니다.");
+          showDebug("📦 브라우저에서 마이크 사용이 지원되지 않습니다.");
+        } else {
+          navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+              logToDebug("✅ 마이크 허용됨: " + stream.getAudioTracks().length + "개의 트랙 탐지됨");
+              console.log("🎤 마이크 스트림", stream);
+              showDebug("📦 마이크 허용됨");
+            })
+            .catch(err => {
+              logToDebug("❌ 마이크 접근 실패: " + err.message);
+              showDebug("📦 마이크 접근 실패:");
+            });
+        }
+      }, 3000);  // 페이지 로딩 후 3초 뒤 실행
+      
+
+
+
+
     // ESC 키 눌렀을 때 GPT UI 닫기
     window.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
@@ -808,7 +848,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
     engine.runRenderLoop(() => scene.render());
-    window.addEventListener("resize", () => engine.resize());
+    window.addEventListener("resize", () => engine.resize());   // 현재 이게 2개 있으므로 주의
 
 
 

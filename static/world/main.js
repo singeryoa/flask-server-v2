@@ -424,6 +424,97 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
+
+    // postman 으로 whisper 를 빠르게 로컬 테스트 시 사용하는 코드
+    // GPT 음성 입력 클릭하여 음성을 받고 GPT 가 응답하여 mp4로 변환 후, 음성이 포함된 영상으로 응답
+    /*
+    document.getElementById("voiceBtn").addEventListener("click", async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        const audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'speech.mp3');
+
+            try {
+                const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.text) {
+                    document.getElementById("gptInput").value = data.text;
+                    sendToGPT();  // Whisper 결과 바로 GPT에 전송
+                } else {
+                    showDebug("❌ Whisper 인식 실패");
+                }
+
+            } catch (err) {
+                console.error("❌ Whisper 서버 오류:", err);
+                showDebug("❌ Whisper 서버 오류 발생");
+            }
+        };
+
+        mediaRecorder.start();
+        setTimeout(() => mediaRecorder.stop(), 5000); // 5초 녹음
+    });
+    */
+
+
+
+
+
+    // Whisper 음성 녹음 버튼 클릭 시 실행
+    document.getElementById("voiceBtn").addEventListener("click", async () => {
+        logToDebug("🎤 마이크 접근 시도 중...");
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        logToDebug("✅ 마이크 접근 성공");
+        console.log("🎤 마이크 스트림:", stream);
+        const mediaRecorder = new MediaRecorder(stream);
+        const audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'speech.mp3');
+
+            const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.text) {
+                document.getElementById("gptInput").value = data.text;
+                sendToGPT();  // Whisper 인식 후 자동으로 GPT 응답 요청
+            } else {
+                alert("인식 실패: " + (data.error || ''));
+            }
+        };
+
+        mediaRecorder.start();
+        setTimeout(() => mediaRecorder.stop(), 5000); // 5초 녹음
+    });
+
+
+
+
+
+
+
+
     // GPT로 메시지 전송
     // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
     window.sendToGPT = function () {
@@ -682,6 +773,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // 퀘스트 vr모드 용 입력 후 엔터 키 작동 법
     // 엔터 키 입력 시 자동 전송
+    /*
     document.getElementById("gptInput").addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === "y" || e.key === "Y") {    // 임시로 Y 키 입력 테스트
             e.preventDefault(); // 기본 엔터 동작 방지 (폼 제출 방지)
@@ -690,6 +782,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             sendToGPT();        // 우리가 정의한 GPT 전송 함수 호출
         }
     });
+    */
 
 
 
@@ -715,6 +808,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             debug.innerText = message;
         }
     }
+
+
+    function logToDebug(msg) {
+        const log = document.getElementById("debugLog");
+        log.innerText = msg;
+      }
+      
     
 });
 

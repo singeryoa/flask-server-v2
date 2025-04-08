@@ -17,15 +17,22 @@ import openai
 # from openai import OpenAI
 # client = OpenAI()  # 자동으로 환경변수에서 API 키 사용
 
-
 import tempfile
 import base64
 
 from flask_cors import CORS
 
+import uuid
+# import whisper
+from faster_whisper import WhisperModel
+
 app = Flask(__name__, static_url_path="", static_folder="static")
 # app = Flask(__name__)  위로 변경.
 # Flask에서 static 경로를 root처럼 사용하게 만들기
+
+# Whisper 모델 로딩 (GPU 완전 차단)
+model = WhisperModel("base", device="cpu", compute_type="int8")
+# model = whisper.load_model("base")  # 작은 모델부터 시작 (tiny/base/small/medium/large)
 
 # CORS(app)
 CORS(app, resources={r"/gpt_video": {"origins": "*"}})
@@ -226,7 +233,34 @@ def gpt_video():
 
 
 
+@app.route("/whisper", methods=["POST"])
+def whisper_transcribe():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
 
+    file = request.files['file']
+    temp_name = f"temp_{uuid.uuid4().hex}.mp3"
+    file.save(temp_name)
+
+    try:
+        segments, _ = model.transcribe(temp_name)
+        text = " ".join([seg.text for seg in segments])
+        return jsonify({"text": text})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    finally:
+        os.remove(temp_name)
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
+
+
+
+
+
+
+#  기존 whisper 코드
+"""
 @app.route('/whisper', methods=['POST'])
 def whisper_recognize():
     try:
@@ -251,10 +285,10 @@ def whisper_recognize():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+"""
 
 
-
-
+# ㅇㅇㅇㅇㅇ
 
 
 """
@@ -268,10 +302,15 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
 """
 
+
+
+#  서버 테스트를 위해 잠시 생략
+
+""" 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
+"""
 
 
 

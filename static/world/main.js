@@ -63,6 +63,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     camera.keysRight.push(68); // D
 
 
+    // ✅ 카메라 정면 설정
+    camera.setTarget(BABYLON.Vector3.Zero());
+
     // 바닥
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 }, scene);
     ground.material = new BABYLON.StandardMaterial("groundMat", scene);

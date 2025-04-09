@@ -26,6 +26,11 @@ import uuid
 # import whisper
 # from faster_whisper import WhisperModel
 
+from gtts import gTTS
+import subprocess
+
+import logging
+
 app = Flask(__name__, static_url_path="", static_folder="static")
 # app = Flask(__name__)  위로 변경.
 # Flask에서 static 경로를 root처럼 사용하게 만들기
@@ -157,8 +162,10 @@ def serve_assets(filename):
 @app.route("/gpt_test", methods=["POST"])
 def gpt_test():
     try:
+        logging.info("✅ 메시지 수신 전")
         data = request.get_json()
         print("💬 수신된 메시지:", data)
+        logging.info("✅ 수신된 메시지")
         user_input = data["message"]
 
         openai.api_key = os.getenv("OPENAI_API_KEY")  # 명시해도 무방
@@ -174,21 +181,25 @@ def gpt_test():
 
         # 1. GPT 응답 텍스트 저장
         gpt_response = response["choices"][0]["message"]["content"]
+        logging.info("✅ GPT 응답 텍스트 저장")
 
         # 2. TTS로 mp3 생성 (Google TTS 또는 OpenAI TTS)
-        from gtts import gTTS
         tts = gTTS(text=gpt_response, lang='ko')
         mp3_path = os.path.join("static", "audio", "response.mp3")
         tts.save(mp3_path)
+        logging.info("✅ TTS로 mp3 생성")
 
 
 
 
         # mp3 → mp4 변환
-        import subprocess
 
         jpg_path = os.path.join("static", "audio", "white.jpg")  # 단색 배경
+        if not os.path.exists(jpg_path):
+            jpg_path = "white.jpg"  # fallback to root   루트 디렉토리에 있을 경우도 포함
         mp4_path = os.path.join("static", "audio", "response.mp4")
+        logging.info("✅ mp3 -> mp4 변환환")
+
 
         # ffmpeg 명령어 실행
         subprocess.run([
@@ -203,6 +214,8 @@ def gpt_test():
             "-y", mp4_path
         ])
 
+        logging.info("✅ ffmpeg 명령어 실행")
+
         return jsonify({"response": gpt_response})
         # 일단 아래는 지정된 mp4 재생 코드이므로 생략하고 위 코드로 대체
         # return jsonify({"response": response["choices"][0]["message"]["content"]})
@@ -213,6 +226,7 @@ def gpt_test():
     except Exception as e:
         print("🔥 GPT 처리 중 에러:", e)
         return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
+        logging.info("✅ GPT 처리 중 에러")
 
 
 
@@ -251,12 +265,14 @@ def gpt_test():
 
 @app.route("/gpt_video")
 def gpt_video():
+
+    logging.info("✅ gpt_video 진입")
     # static 폴더 내 mp4 파일 경로
     video_path = os.path.join("static", "audio", "response.mp4")
 
     # 바로 아래 코드는 기존 존재하는 mp4 파일 영상 재생이 목적이므로 생략하고 그 아래 코드로 대체
-    # return send_file(video_path, mimetype="video/mp4")
-    return send_file("static/audio/response.mp4", mimetype="video/mp4")
+    return send_file(video_path, mimetype="video/mp4")
+    # return send_file("static/audio/response.mp4", mimetype="video/mp4")
 
     """   
     "https://flask-server-v2.onrender.com/gpt_video" 이 URL이 실제 mp4 파일을 반환하는지 
@@ -313,7 +329,7 @@ def whisper():
 
         audio_file = request.files['file']
         print("✅ 파일 수신됨:", audio_file.filename)
-        
+        logging.info("✅ 파일 수신됨")
 
         
         response_path = "response.mp3"
@@ -328,18 +344,20 @@ def whisper():
 
         print("✅ Whisper 결과:", transcript["text"])
         return jsonify({"text": transcript["text"]})
+        logging.info("✅ Whisper 결과")
 
     except Exception as e:
         print("🔥 Whisper 처리 중 오류 발생:", e)
         return jsonify({"error": str(e)}), 500
+        logging.info("✅ Whisper 처리 중 오류 발생생")
+    
     
     finally:
         # 마지막에 파일 삭제
         if os.path.exists(response_path):
             os.remove(response_path)
             # 바로 위 코드는 도입 시 충돌 주의 (단일 사용자 테스트에선 OK) 
-
-
+    
 
 
 

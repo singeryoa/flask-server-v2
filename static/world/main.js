@@ -154,10 +154,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // NPC 클릭 → GPT 대화 시작
     npcPlane.actionManager = new BABYLON.ActionManager(scene);
+    showDebug("📦 NPC 클릭 -> GPT 대화 시작");
     npcPlane.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(
             BABYLON.ActionManager.OnPickTrigger,
             () => {
+                showDebug("📦 NPC 클릭 -> 대화 시작 -> OnPickTrigger");
                 document.getElementById("gptUI").style.display = "block";
                 document.getElementById("gptInput").focus();
             }

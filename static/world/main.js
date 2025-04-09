@@ -228,7 +228,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (!window.videoPlane) {
         // 1. HTMLVideoElement 직접 생성 (src만 지정하고 자동 재생 X)
         const video = document.createElement("video");
-        video.src = "https://flask-server-v2.onrender.com/gpt_video";
+
+        // 바로 아래 1줄 코드는 기존 존재하는 mp4 영상 파일 테스트 목적이므로 삭제 처리함
+        // video.src = "https://flask-server-v2.onrender.com/gpt_video";
         video.crossOrigin = "anonymous";
         video.loop = false;
         video.autoplay = false;   // ❗자동 재생 금지
@@ -263,7 +265,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
 
         console.log("📦 비디오 머티리얼 생성:", video);
-        showDebug("📦 비디오 머티리얼얼 생성:");
+        showDebug("📦 비디오 머티리얼 생성:");
     
         // 4. 비디오 평면 생성
         const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
@@ -571,10 +573,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         const msg = document.getElementById("gptInput").value;
         if (!msg) {
             console.log("❌ 입력이 비어있음");
+            showDebug("🟢 입력이 비어있음");
             return;
         }
         
-
+        showDebug("🟢 fetch 시작 전");
         console.log("🟢 fetch 시작 전");
         // fetch("/gpt_test",  에서 아래 경로로 변경
         fetch("https://flask-server-v2.onrender.com/gpt_test", {

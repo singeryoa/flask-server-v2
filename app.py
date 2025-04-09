@@ -171,7 +171,45 @@ def gpt_test():
             ]
         )
 
-        return jsonify({"response": response["choices"][0]["message"]["content"]})
+
+        # 1. GPT 응답 텍스트 저장
+        gpt_response = response["choices"][0]["message"]["content"]
+
+        # 2. TTS로 mp3 생성 (Google TTS 또는 OpenAI TTS)
+        from gtts import gTTS
+        tts = gTTS(text=gpt_response, lang='ko')
+        mp3_path = os.path.join("static", "audio", "response.mp3")
+        tts.save(mp3_path)
+
+
+
+
+        # mp3 → mp4 변환
+        import subprocess
+
+        jpg_path = os.path.join("static", "audio", "white.jpg")  # 단색 배경
+        mp4_path = os.path.join("static", "audio", "response.mp4")
+
+        # ffmpeg 명령어 실행
+        subprocess.run([
+            "ffmpeg", "-loop", "1",
+            "-i", jpg_path,
+            "-i", mp3_path,
+            "-shortest",
+            "-c:v", "libx264",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            "-y", mp4_path
+        ])
+
+        return jsonify({"response": gpt_response})
+        # 일단 아래는 지정된 mp4 재생 코드이므로 생략하고 위 코드로 대체
+        # return jsonify({"response": response["choices"][0]["message"]["content"]})
+    
+
+
+    
     except Exception as e:
         print("🔥 GPT 처리 중 에러:", e)
         return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
@@ -215,7 +253,10 @@ def gpt_test():
 def gpt_video():
     # static 폴더 내 mp4 파일 경로
     video_path = os.path.join("static", "audio", "response.mp4")
-    return send_file(video_path, mimetype="video/mp4")
+
+    # 바로 아래 코드는 기존 존재하는 mp4 파일 영상 재생이 목적이므로 생략하고 그 아래 코드로 대체
+    # return send_file(video_path, mimetype="video/mp4")
+    return send_file("static/audio/response.mp4", mimetype="video/mp4")
 
     """   
     "https://flask-server-v2.onrender.com/gpt_video" 이 URL이 실제 mp4 파일을 반환하는지 
@@ -287,6 +328,15 @@ def whisper():
 
 
 
+# whisper 처리 이후 mp4 로 변경
+
+response_path = "response.mp3"
+# 파일 저장
+audio_file.save(response_path)
+
+# 파일 삭제
+if os.path.exists(response_path):
+    os.remove(response_path)
 
 
 

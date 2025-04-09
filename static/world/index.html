@@ -31,17 +31,10 @@
 
 
 
-  <!-- GPT 대화 UI -->
+  <!-- 실패했던 음성 GPT 대화 UI. 고정되어 있어 삭제 처리 -->
   <!-- main.js 파일의 마지막 부분에 "GPT로 메시지 전송" 주석처리 된 부분과 쌍으로 있어야 함 -->
-  <div id="gptUI"
-    style="display:block; position:absolute; top:30%; left:50%; transform:translate(-50%, -30%); background:white; padding:20px; border-radius:10px; z-index:100;">
-    <p>GPT에게 질문하세요:</p>
+  
 
-    <!-- 바로 아래는 gpt Input 버튼. 음성 대화 버튼과 텍스트 대화 버튼 -->
-    <input type="text" id="gptInput" style="width:300px; font-size:16px;">
-    <button id="voiceBtn">🎙 음성</button>
-    <button onclick="sendToGPT()" style="margin-left:10px;">확인</button>
-  </div>
 
   <div id="debugLog"
     style="position:absolute; top:10px; left:10px; color:yellow; background-color:rgba(0,0,0,0.7); padding:5px; z-index:999;">

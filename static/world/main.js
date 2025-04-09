@@ -334,6 +334,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     
 
 
+    // 음성 대화를 위한 3d 구체 오브젝트 생성
+    const voiceSphere = BABYLON.MeshBuilder.CreateSphere("voiceSphere", {diameter: 0.5}, scene);
+    voiceSphere.position = new BABYLON.Vector3(1, 1, 0);  // 적절한 위치 조정
+
+
 
 
     // avatar.glb 로드
@@ -483,87 +488,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
     // OpenAI whisper api 코드.
-    document.getElementById("voiceBtn").addEventListener("click", async () => {
-        logToDebug("🎤  [버튼 클릭됨] 음성 버튼 클릭 감지됨 (OpenAI Whisper API)");
-        showDebug("[버튼 클릭됨] 음성 버튼 클릭 감지됨");
     
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            logToDebug("✅ [마이크 허용됨] getUserMedia 성공");
-            console.log("🎤 마이크 stream 객체:", stream);
-            showDebug("[마이크 허용됨] getUserMedia 성공");
-            const mediaRecorder = new MediaRecorder(stream);
-            const audioChunks = [];
-    
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
-    
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = async () => {
-                    const base64Audio = reader.result.split(',')[1];
-    
-                    const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ audio: base64Audio })
-                    });
-    
-                    const result = await response.json();
-                    if (result.text) {
-                        document.getElementById("gptInput").value = result.text;
-                        sendToGPT();
-                    } else {
-                        alert("음성 인식 실패: " + (result.error || ''));
-                        showDebug("음성 인식 실패패");
-                    }
-                };
-            };
-    
-
-            
-
-            const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
-                method: "POST",
-                body: formData
-            });
-              
-            try {
-                const data = await response.json();
-                if (data.text) {
-                  document.getElementById("gptInput").value = data.text;
-                  sendToGPT();
-                } else {
-                  alert("❌ Whisper 응답 오류: " + (data.error || '인식 실패'));
-                }
-            } catch (err) {
-                alert("⚠️ JSON 파싱 실패: " + err.message);
-            }
-              
-
-
-
-
-
-
-            mediaRecorder.start();
-            setTimeout(() => {
-                mediaRecorder.stop();
-            }, 5000);
-        } catch (error) {
-            console.error("🎤 마이크 접근 실패:", error);
-            logToDebug("❌ [마이크 오류] getUserMedia 실패: " + err.name + " - " + err.message);
-            alert("마이크 사용이 허용되지 않았거나 장치 오류입니다.");
-            showDebug("마이크 접근 실패");
-        }
-    });
-    
-
 
 
 
@@ -576,11 +501,14 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log("🟢 sendToGPT 함수 실행됨");
         showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
 
+        // 이 부분은 고정 ui 부분이므로 3d 오브젝트 클릭하여 음성처리를 위해 수정 혹은 삭제 필요.
+        /*
         const msg = document.getElementById("gptInput").value;
         if (!msg) {
             console.log("❌ 입력이 비어있음");
             return;
         }
+        */
 
         console.log("🟢 fetch 시작 전");
         // fetch("/gpt_test",  에서 아래 경로로 변경
@@ -817,6 +745,65 @@ window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById("gptUI").style.display = "none";
         });
     }
+
+
+
+
+
+    // 음성 녹음 후 Whisper → mp4 출력 (구체 클릭 기반)
+    const sphere = scene.getMeshByName("voiceSphere");
+
+    if (sphere) {
+        sphere.actionManager = new BABYLON.ActionManager(scene);
+        sphere.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
+                logToDebug("🎤 구체 내 마이크 요청 중...");
+                showDebug("📦 구체 내 마이크 요청 중...");
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    logToDebug("🎤 구체 내 마이크 허용됨");
+                    showDebug("📦 구체 내 마이크 허용됨");
+
+                    const mediaRecorder = new MediaRecorder(stream);
+                    const chunks = [];
+
+                    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(chunks, { type: 'audio/mp3' });
+                        const formData = new FormData();
+                        formData.append("file", blob, "speech.mp3");
+
+                        const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        try {
+                            const data = await res.json();
+                            if (data.text) {
+                                logToDebug("🧠 구체 GPT 질문 인식됨: " + data.text);
+                                showDebug("📦 구체 GPT 질문 인식됨");
+                                sendToGPT(data.text);  // → GPT 응답 함수 호출
+                            } else {
+                                alert("❌ 구체 내 Whisper 실패: " + (data.error || "에러 없음"));
+                                showDebug("📦 구체 내 Whisper 실패");
+                            }
+                        } catch (err) {
+                            alert("⚠️ 구체 내 Whisper JSON 파싱 실패: " + err.message);
+                            showDebug("📦 구체 내 Whisper JSON 파싱 실패");
+                        }
+                    };
+
+                    mediaRecorder.start();
+                    setTimeout(() => mediaRecorder.stop(), 5000);
+                } catch (err) {
+                    alert("❌ 구체 내 마이크 접근 실패: " + err.message);
+                    showDebug("📦 구체 내 마이크 접근 실패");
+                }
+            })
+        );
+    }
+
 
 
 

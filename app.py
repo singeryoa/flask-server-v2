@@ -209,7 +209,7 @@ def gpt_test():
     
 
 
-    
+
     except Exception as e:
         print("🔥 GPT 처리 중 에러:", e)
         return jsonify({"response": f"[서버 에러 발생] {str(e)}"}), 500
@@ -314,9 +314,16 @@ def whisper():
         audio_file = request.files['file']
         print("✅ 파일 수신됨:", audio_file.filename)
         
-        audio_file.save("temp.mp3")  # 디버깅용 임시 저장
 
-        with open("temp.mp3", "rb") as f:
+        
+        response_path = "response.mp3"
+        # 파일 저장
+        audio_file.save(response_path)
+        # audio_file.save("temp.mp3")  # 디버깅용 임시 저장
+        
+
+
+        with open("response.mp3", "rb") as f:
             transcript = openai.Audio.transcribe("whisper-1", f)
 
         print("✅ Whisper 결과:", transcript["text"])
@@ -325,18 +332,16 @@ def whisper():
     except Exception as e:
         print("🔥 Whisper 처리 중 오류 발생:", e)
         return jsonify({"error": str(e)}), 500
+    
+    finally:
+        # 마지막에 파일 삭제
+        if os.path.exists(response_path):
+            os.remove(response_path)
+            # 바로 위 코드는 도입 시 충돌 주의 (단일 사용자 테스트에선 OK) 
 
 
 
-# whisper 처리 이후 mp4 로 변경
 
-response_path = "response.mp3"
-# 파일 저장
-audio_file.save(response_path)
-
-# 파일 삭제
-if os.path.exists(response_path):
-    os.remove(response_path)
 
 
 

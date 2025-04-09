@@ -267,14 +267,18 @@ def whisper_openai():
 def whisper():
     try:
         if 'file' not in request.files:
+            print("❌ file 파라미터 없음")
             return jsonify({"error": "file 파라미터가 없습니다."}), 400
 
         audio_file = request.files['file']
+        print("✅ 파일 수신됨:", audio_file.filename)
+        
         audio_file.save("temp.mp3")  # 디버깅용 임시 저장
 
         with open("temp.mp3", "rb") as f:
             transcript = openai.Audio.transcribe("whisper-1", f)
 
+        print("✅ Whisper 결과:", transcript["text"])
         return jsonify({"text": transcript["text"]})
 
     except Exception as e:

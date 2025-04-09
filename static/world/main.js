@@ -306,6 +306,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     }
     
+
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("⚠️ 이 브라우저는 마이크 기능을 지원하지 않습니다.");
+        showDebug("📦 이 브라우저는 마이크 기능을 지원하지 않습니다.");
+        return;
+    }
+    
     
 
 
@@ -335,7 +343,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     mediaRecorder.onstop = async () => {
                         const blob = new Blob(chunks, { type: 'audio/mp3' });
                         const formData = new FormData();
-                        formData.append("file", blob, "speech.mp3");
+                        formData.append("file", blob, "response.mp3");
 
                         const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
                             method: "POST",
@@ -559,14 +567,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log("🟢 sendToGPT 함수 실행됨");
         showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
 
-        // 이 부분은 고정 ui 부분이므로 3d 오브젝트 클릭하여 음성처리를 위해 수정 혹은 삭제 필요.
-        /*
+        // 이 부분은 텍스트 기반 GPT 입력 ui 부분
         const msg = document.getElementById("gptInput").value;
         if (!msg) {
             console.log("❌ 입력이 비어있음");
             return;
         }
-        */
+        
 
         console.log("🟢 fetch 시작 전");
         // fetch("/gpt_test",  에서 아래 경로로 변경

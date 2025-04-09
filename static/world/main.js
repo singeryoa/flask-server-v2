@@ -525,6 +525,32 @@ window.addEventListener('DOMContentLoaded', async () => {
                 };
             };
     
+
+            
+
+            const response = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                method: "POST",
+                body: formData
+            });
+              
+            try {
+                const data = await response.json();
+                if (data.text) {
+                  document.getElementById("gptInput").value = data.text;
+                  sendToGPT();
+                } else {
+                  alert("❌ Whisper 응답 오류: " + (data.error || '인식 실패'));
+                }
+            } catch (err) {
+                alert("⚠️ JSON 파싱 실패: " + err.message);
+            }
+              
+
+
+
+
+
+
             mediaRecorder.start();
             setTimeout(() => {
                 mediaRecorder.stop();

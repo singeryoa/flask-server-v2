@@ -231,14 +231,15 @@ def gpt_video():
 
 
 
-
+"""
+이전 사용했던 코드
 # OpenAI whisper API 
 @app.route("/whisper", methods=["POST"])
 def whisper_openai():
     try:
         # 1. 파일 받아오기
         if 'file' not in request.files:
-            return jsonify({'error': 'No file uploaded'}), 400
+            return jsonify({"error": "file 파라미터가 없습니다."}), 400
 
         file = request.files['file']
         temp_path = f"temp_{uuid.uuid4().hex}.mp3"
@@ -256,6 +257,29 @@ def whisper_openai():
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
+"""
+
+
+
+
+
+@app.route("/whisper", methods=["POST"])
+def whisper():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "file 파라미터가 없습니다."}), 400
+
+        audio_file = request.files['file']
+        audio_file.save("temp.mp3")  # 디버깅용 임시 저장
+
+        with open("temp.mp3", "rb") as f:
+            transcript = openai.Audio.transcribe("whisper-1", f)
+
+        return jsonify({"text": transcript["text"]})
+
+    except Exception as e:
+        print("🔥 Whisper 처리 중 오류 발생:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 

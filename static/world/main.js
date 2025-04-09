@@ -70,31 +70,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // 텔레포트. VR 모드 지원   아래는 기존 코드 1줄.  그 아래는 퀘스트 콘트롤러로 텔레포트 이동 기능.
-    // 주의: ground 객체는 미리 BABYLON.MeshBuilder.CreateGround(...)로 생성돼 있어야 합니다.
-    // const xrHelperPromise = scene.createDefaultXRExperienceAsync({});
-    const xrHelper = await scene.createDefaultXRExperienceAsync({
-        floorMeshes: [ground]  // 기존 바닥 메쉬를 지정해줘야 텔레포트 가능
-    });
-    xrHelper.teleportation.enabled = true;
-
-
-
-    // 텔레포트를 위한 새로운 바닥 메시를 만들 경우, 아래 코드 이용. 기존 ground 메시 위에 투명 처리.
-    /*
-    const teleportFloor = BABYLON.MeshBuilder.CreateGround("teleFloor", { width: 20, height: 20 }, scene);
-    teleportFloor.position.y = 0.01;  // 기존 메시와 겹칠 경우 살짝 위로
-    teleportFloor.isVisible = false; // 플레이어 눈에는 안 보이게
-
-
-    const xrHelperPromise = scene.createDefaultXRExperienceAsync().then((xrHelper) => {
-        const featuresManager = xrHelper.baseExperience.featuresManager;
-        featuresManager.enableFeature(BABYLON.WebXRFeatureName.TELEPORTATION, 'stable', {
-            floorMeshes: [teleportFloor]  
-        });
-    });
-    */
-
 
 
 
@@ -339,6 +314,61 @@ window.addEventListener('DOMContentLoaded', async () => {
     voiceSphere.position = new BABYLON.Vector3(1, 1, 0);  // 적절한 위치 조정
 
 
+    // 음성 녹음 후 Whisper → mp4 출력 (구체 클릭 기반)
+    // const sphere = scene.getMeshByName("voiceSphere");
+
+    if (voiceSphere) {
+        voiceSphere.actionManager = new BABYLON.ActionManager(scene);
+        voiceSphere.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
+                logToDebug("🎤 구체 내 마이크 요청 중...");
+                showDebug("📦 구체 내 마이크 요청 중...");
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    logToDebug("🎤 구체 내 마이크 허용됨");
+                    showDebug("📦 구체 내 마이크 허용됨");
+
+                    const mediaRecorder = new MediaRecorder(stream);
+                    const chunks = [];
+
+                    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(chunks, { type: 'audio/mp3' });
+                        const formData = new FormData();
+                        formData.append("file", blob, "speech.mp3");
+
+                        const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        try {
+                            const data = await res.json();
+                            if (data.text) {
+                                logToDebug("🧠 구체 GPT 질문 인식됨: " + data.text);
+                                showDebug("📦 구체 GPT 질문 인식됨");
+                                sendToGPT(data.text);  // → GPT 응답 함수 호출
+                            } else {
+                                alert("❌ 구체 내 Whisper 실패: " + (data.error || "에러 없음"));
+                                showDebug("📦 구체 내 Whisper 실패");
+                            }
+                        } catch (err) {
+                            alert("⚠️ 구체 내 Whisper JSON 파싱 실패: " + err.message);
+                            showDebug("📦 구체 내 Whisper JSON 파싱 실패");
+                        }
+                    };
+
+                    mediaRecorder.start();
+                    setTimeout(() => mediaRecorder.stop(), 5000);
+                } catch (err) {
+                    alert("❌ 구체 내 마이크 접근 실패: " + err.message);
+                    showDebug("📦 구체 내 마이크 접근 실패");
+                }
+            })
+        );
+    }
+
+
 
 
     // avatar.glb 로드
@@ -359,6 +389,34 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log("GLB 로드 완료");
     });
 
+
+
+
+
+    // 텔레포트. VR 모드 지원   아래는 기존 코드 1줄.  그 아래는 퀘스트 콘트롤러로 텔레포트 이동 기능.
+    // 주의: ground 객체는 미리 BABYLON.MeshBuilder.CreateGround(...)로 생성돼 있어야 합니다.
+    // const xrHelperPromise = scene.createDefaultXRExperienceAsync({});
+    const xrHelper = await scene.createDefaultXRExperienceAsync({
+        floorMeshes: [ground]  // 기존 바닥 메쉬를 지정해줘야 텔레포트 가능
+    });
+    xrHelper.teleportation.enabled = true;
+
+
+
+    // 텔레포트를 위한 새로운 바닥 메시를 만들 경우, 아래 코드 이용. 기존 ground 메시 위에 투명 처리.
+    /*
+    const teleportFloor = BABYLON.MeshBuilder.CreateGround("teleFloor", { width: 20, height: 20 }, scene);
+    teleportFloor.position.y = 0.01;  // 기존 메시와 겹칠 경우 살짝 위로
+    teleportFloor.isVisible = false; // 플레이어 눈에는 안 보이게
+
+
+    const xrHelperPromise = scene.createDefaultXRExperienceAsync().then((xrHelper) => {
+        const featuresManager = xrHelper.baseExperience.featuresManager;
+        featuresManager.enableFeature(BABYLON.WebXRFeatureName.TELEPORTATION, 'stable', {
+            floorMeshes: [teleportFloor]  
+        });
+    });
+    */
 
 
 
@@ -518,6 +576,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             body: JSON.stringify({ message: msg })
         })
         .then(res => res.json())
+
 
 
         //  GPT 응답 ui 부분 수정 부분
@@ -750,59 +809,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // 음성 녹음 후 Whisper → mp4 출력 (구체 클릭 기반)
-    const sphere = scene.getMeshByName("voiceSphere");
-
-    if (sphere) {
-        sphere.actionManager = new BABYLON.ActionManager(scene);
-        sphere.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
-                logToDebug("🎤 구체 내 마이크 요청 중...");
-                showDebug("📦 구체 내 마이크 요청 중...");
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    logToDebug("🎤 구체 내 마이크 허용됨");
-                    showDebug("📦 구체 내 마이크 허용됨");
-
-                    const mediaRecorder = new MediaRecorder(stream);
-                    const chunks = [];
-
-                    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                    mediaRecorder.onstop = async () => {
-                        const blob = new Blob(chunks, { type: 'audio/mp3' });
-                        const formData = new FormData();
-                        formData.append("file", blob, "speech.mp3");
-
-                        const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
-                            method: "POST",
-                            body: formData
-                        });
-
-                        try {
-                            const data = await res.json();
-                            if (data.text) {
-                                logToDebug("🧠 구체 GPT 질문 인식됨: " + data.text);
-                                showDebug("📦 구체 GPT 질문 인식됨");
-                                sendToGPT(data.text);  // → GPT 응답 함수 호출
-                            } else {
-                                alert("❌ 구체 내 Whisper 실패: " + (data.error || "에러 없음"));
-                                showDebug("📦 구체 내 Whisper 실패");
-                            }
-                        } catch (err) {
-                            alert("⚠️ 구체 내 Whisper JSON 파싱 실패: " + err.message);
-                            showDebug("📦 구체 내 Whisper JSON 파싱 실패");
-                        }
-                    };
-
-                    mediaRecorder.start();
-                    setTimeout(() => mediaRecorder.stop(), 5000);
-                } catch (err) {
-                    alert("❌ 구체 내 마이크 접근 실패: " + err.message);
-                    showDebug("📦 구체 내 마이크 접근 실패");
-                }
-            })
-        );
-    }
 
 
 

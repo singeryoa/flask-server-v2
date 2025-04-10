@@ -471,7 +471,10 @@
         gptSpeechCylinder.actionManager = new BABYLON.ActionManager(scene);
         gptSpeechCylinder.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
-                const lastAnswer = document.getElementById("gptInput")?.value?.trim();
+                
+                // ✅ 기존 입력창이 아닌, 가장 마지막 GPT 응답 텍스트 가져오기
+                const lastAnswer = window.lastGptResponse?.trim();
+                
                 if (!lastAnswer || lastAnswer.length === 0) {
                     showDebug("❌ GPT 응답 텍스트가 비어있음");
                     return;
@@ -816,7 +819,10 @@
     
                 // UI 숨기기
                 document.getElementById("gptUI").style.display = "none";
-    
+
+                // ✅ GPT 응답을 전역 변수에 저장
+                window.lastGptResponse = data.response;  
+
     
     
                 // Babylon.js: 응답 영상 재생 기능 추가

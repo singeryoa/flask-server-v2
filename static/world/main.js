@@ -408,6 +408,52 @@
         }
     
     
+
+
+
+
+
+        // 🎯 gTTS 테스트용 구체 생성
+        const gttsSphere = BABYLON.MeshBuilder.CreateSphere("gttsSphere", {diameter: 0.5}, scene);
+        gttsSphere.position = new BABYLON.Vector3(2, 1, 0);  // 기존 구체 옆에 위치
+        showDebug("📦 gTTS 테스트용 구체 생성 완료");
+
+        gttsSphere.actionManager = new BABYLON.ActionManager(scene);
+        gttsSphere.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
+                logToDebug("🎯 gTTS 테스트 시작");
+                showDebug("📦 gTTS 테스트 시작");
+
+                try {
+                    const res = await fetch("https://flask-server-v2.onrender.com/test_gtts");
+                    const result = await res.text();
+                    console.log("✅ gTTS 서버 응답:", result);
+                    showDebug("✅ gTTS 서버 응답: " + result);
+
+                    // mp4 영상 재생
+                    if (window.videoElement) {
+                        window.videoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
+                        window.videoElement.currentTime = 0;
+                        await window.videoElement.play();
+                        showDebug("✅ gTTS 영상 재생 시작");
+                    }
+
+                } catch (err) {
+                    console.error("❌ gTTS 요청 실패:", err);
+                    showDebug("❌ gTTS 요청 실패: " + err.message);
+                }
+            })
+        );
+
+
+
+
+
+
+
+
+
+
     
     
         // avatar.glb 로드

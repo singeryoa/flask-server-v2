@@ -297,6 +297,28 @@ def whisper():
 
 
 
+@app.route("/test_gtts")
+def test_gtts():
+    try:
+        tts = gTTS("이것은 G T T S 음성 테스트입니다.", lang="ko")
+        tts.save("static/audio/response.mp3")
+        print("✅ gTTS mp3 저장 완료")
+
+        subprocess.run([
+            "ffmpeg", "-y", "-i", "static/audio/response.mp3",
+            "-vf", "color=c=black:s=640x480", "-shortest", "static/audio/response.mp4"
+        ])
+        print("✅ mp4 변환 완료")
+
+        return "✅ gTTS → mp4 변환 성공"
+    except Exception as e:
+        print("❌ gTTS 테스트 실패:", e)
+        return f"❌ gTTS 테스트 실패: {e}"
+
+
+
+
+
 
 # fast-whisper 로컬 테스트용 
 """ 

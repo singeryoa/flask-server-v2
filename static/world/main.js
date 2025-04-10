@@ -448,7 +448,60 @@
 
 
 
+        // gTTS 전용 비디오 판 (중간 위치)
+        const gttsVideoPlane = BABYLON.MeshBuilder.CreatePlane("gttsVideoPlane", { width: 4, height: 2.25 }, scene);
+        gttsVideoPlane.position = new BABYLON.Vector3(0, 2, 2);
+        gttsVideoPlane.rotation.x = Math.PI;
+        gttsVideoPlane.material = new BABYLON.StandardMaterial("gttsVideoMat", scene);
+        window.gttsVideoPlane = gttsVideoPlane;
 
+
+
+
+
+
+
+        // ✅ GPT 응답을 음성(mp4)으로 출력하는 전용 원기둥 생성
+        const gptSpeechCylinder = BABYLON.MeshBuilder.CreateCylinder("gptSpeechCylinder", {
+            diameter: 0.5,
+            height: 1
+        }, scene);
+        gptSpeechCylinder.position = new BABYLON.Vector3(-1, 0.5, 0);  // 기존 오브젝트와 간섭 없이 적당히 배치
+
+        gptSpeechCylinder.actionManager = new BABYLON.ActionManager(scene);
+        gptSpeechCylinder.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
+                const lastAnswer = document.getElementById("gptInput")?.value?.trim();
+                if (!lastAnswer || lastAnswer.length === 0) {
+                    showDebug("❌ GPT 응답 텍스트가 비어있음");
+                    return;
+                }
+
+                showDebug("📤 GPT 응답을 gTTS 음성으로 전송 중...");
+
+                try {
+                    const res = await fetch("https://flask-server-v2.onrender.com/gtts", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ text: lastAnswer })
+                    });
+
+                    if (!res.ok) {
+                        throw new Error("서버 응답 오류");
+                    }
+
+                    // 응답 받은 후 mp4 영상 재생
+                    window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";  // 동일 파일 재사용
+                    window.gttsVideoElement.currentTime = 0;
+                    window.gttsVideoElement.play();
+
+                    showDebug("✅ GPT 음성 영상 재생 시작");
+                } catch (err) {
+                    console.error("❌ GPT 음성 전송 실패:", err);
+                    showDebug("❌ GPT 음성 영상 요청 실패");
+                }
+            })
+        );
 
 
 
@@ -990,8 +1043,9 @@
     
         function logToDebug(msg) {
             const log = document.getElementById("debugLog");
-            log.innerText = msg;
-          }
+            if (log) log.innerText = msg;
+            // log.innerText = msg;
+        }
           
         
     });

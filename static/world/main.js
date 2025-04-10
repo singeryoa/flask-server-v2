@@ -567,17 +567,18 @@
             console.log("🟢 sendToGPT() 호출됨 - 받은 whisper:", msgFromWhisper);
             showDebug("🟢 sendToGPT() 호출됨 - 받은 whisper: " + msgFromWhisper);
 
-            let msg = "";
-            if (msgFromWhisper && typeof msgFromWhisper === "string") {
+            // Whisper 결과가 들어왔는지 확인
+            if (msgFromWhisper && typeof msgFromWhisper === "string" && msgFromWhisper.trim().length > 0) {
                 msg = msgFromWhisper.trim();
-                console.log("📦 Whisper msg 추출:", msg);
-            }
-
-            if (!msg) {
+                console.log("🟢 Whisper 기반 msg 적용:", msg);
+                showDebug("🟢 Whisper 기반 msg 적용");
+            } else {
+                // UI에서 입력한 값 확인
                 const inputElement = document.getElementById("gptInput");
-                if (inputElement && inputElement.value) {
+                if (inputElement && inputElement.value.trim().length > 0) {
                     msg = inputElement.value.trim();
-                    console.log("📦 gptInput에서 추출한 msg:", msg);
+                    console.log("🟢 텍스트 입력 msg 적용:", msg);
+                    showDebug("🟢 텍스트 입력 msg 적용");
                 }
             }
 

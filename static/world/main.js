@@ -566,9 +566,14 @@
 
             // VR 모드에서 msg를 넘겨받지 않았다면, PC 입력창 값을 가져옴
             let msg = msgFromWhisper.trim();
+    
             if (!msg) {
-                msg = document.getElementById("gptInput")?.value?.trim() || "";
+                let inputElement = document.getElementById("gptInput");
+                if (inputElement && inputElement.value) {
+                    msg = inputElement.value.trim();
+                }
             }
+
                 // 아래 두 줄은 위 한줄로 대체
                 // const inputValue = document.getElementById("gptInput")?.value;
                 // msg = inputValue?.trim() || "";

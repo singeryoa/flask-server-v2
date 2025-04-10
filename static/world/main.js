@@ -422,23 +422,62 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // 텔레포트. VR 모드 지원
+    // VR 초기화 함수
     const initVR = async () => {
         try {
-            const xrHelper = await scene.createDefaultXRExperienceAsync({
-                floorMeshes: [ground]
+            // VR 지원 여부 확인
+            if (!navigator.xr) {
+                console.log("VR이 지원되지 않는 브라우저입니다.");
+                return;
+            }
+
+            const xr = await scene.createDefaultXRExperienceAsync({
+                floorMeshes: [ground],
+                disableDefaultUI: true
             });
-            xrHelper.teleportation.enabled = true;
+
             console.log("✅ VR 초기화 완료");
-            showDebug("✅ VR 초기화 완료");
         } catch (error) {
-            console.error("❌ VR 초기화 실패:", error);
-            showDebug("❌ VR 초기화 실패");
+            console.error("VR 초기화 실패:", error);
         }
     };
 
-    // VR 초기화 호출
+    // 비디오 텍스처 생성
+    const createVideoTexture = () => {
+        try {
+            const video = document.createElement("video");
+            video.crossOrigin = "anonymous";
+            video.playsInline = true;
+            video.autoplay = true;
+            video.loop = true;
+            video.src = "/assets/background.mp4";
+            
+            const videoTexture = new BABYLON.VideoTexture("videoTex", video, scene, true);
+            videoTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            videoTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            
+            const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
+            videoMaterial.diffuseTexture = videoTexture;
+            videoMaterial.emissiveTexture = videoTexture;
+            videoMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            
+            const videoPlane = BABYLON.MeshBuilder.CreatePlane("videoPlane", {width: 20, height: 20}, scene);
+            videoPlane.material = videoMaterial;
+            videoPlane.position.y = 10;
+            videoPlane.rotation.x = Math.PI / 2;
+            
+            // 비디오 재생 시작
+            video.play().catch(e => console.error("비디오 재생 실패:", e));
+            
+            console.log("✅ 비디오 평면 생성 완료");
+        } catch (error) {
+            console.error("비디오 텍스처 생성 실패:", error);
+        }
+    };
+
+    // 초기화 함수 호출
     initVR();
+    createVideoTexture();
 
 
 

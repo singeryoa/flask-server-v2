@@ -236,29 +236,38 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     // ✅ 비디오 판 생성
     if (!window.videoPlane) {
-        // 1. HTMLVideoElement 직접 생성 (src만 지정하고 자동 재생 X)
+        // 1. HTMLVideoElement 직접 생성
         const video = document.createElement("video");
         video.crossOrigin = "anonymous";
         video.loop = false;
-        video.autoplay = false;   // ❗자동 재생 금지
+        video.autoplay = false;
         video.muted = true;
-        video.playsInline = true;  // iOS 대응
+        video.playsInline = true;
+        
+        // 비디오 소스 설정
+        video.src = "https://flask-server-v2.onrender.com/gpt_video";
+        
+        // 비디오 로드 이벤트 리스너
+        video.addEventListener("loadeddata", () => {
+            console.log("🎬 비디오 데이터 로드 완료");
+            // 비디오 재생은 sendToGPT 함수에서 처리
+        });
         
         // 2. Babylon VideoTexture 생성
-        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false, true);
+        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false);
         videoTexture.hasAlpha = true;
         
         // 3. 머티리얼 생성
         const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
         videoMaterial.diffuseTexture = videoTexture;
-        videoMaterial.backFaceCulling = false;  // 뒤에서도 보이게
+        videoMaterial.backFaceCulling = false;
         videoMaterial.alpha = 1;
-        videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
+        videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
         
         // 4. 비디오 평면 생성
         const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
         plane.position = new BABYLON.Vector3(0, 2, 0);
-        plane.rotation.x = Math.PI;     // 회전 추가 (X축 기준 180도 뒤집기)
+        plane.rotation.x = Math.PI;
         plane.material = videoMaterial;
         plane.isVisible = true;
         plane.visibility = 1;
@@ -268,11 +277,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         window.videoTexture = videoTexture;
         window.videoElement = video;
         
-        // 자동 재생 방지를 위해 명시적으로 중단
-        video.pause();
-        video.currentTime = 0;
-        
-        window.videoPlane.renderingGroupId = 2;   // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
+        // 비디오 평면 렌더링 순서 설정
+        window.videoPlane.renderingGroupId = 2;
         
         console.log("✅ 비디오 평면 생성 완료");
     }
@@ -351,24 +357,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
     // avatar.glb 로드
-    BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
-        const root = scene.meshes[scene.meshes.length - 1];
-        root.position = new BABYLON.Vector3(3, 0, 0);
-        root.getChildMeshes().forEach(m => {
-            if (m.material && m.material.albedoTexture) {
-                m.material.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-                m.material.alpha = 0.9;
-            }
-        });
-        console.log("✅ GLB 로드 완료");
-        showDebug("✅ GLB 로드 완료");
-    }, function (progress) {
-        // 로딩 진행 상황 표시
-        const percent = Math.floor(progress.loaded / progress.total * 100);
-        showDebug(`GLB 로딩 중: ${percent}%`);
-    }, function (error) {
-        console.error("❌ GLB 로드 실패:", error);
-        showDebug("❌ GLB 로드 실패");
+    // SceneLoader.Append("/assets/", "avatar.glb", ...) 수정 완료됨
+    // function (scene) 에서 function () 로 변경함
+    // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
+    // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
+    // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
+    BABYLON.SceneLoader.Append("assets/", "box.glb", scene, function () {
+        console.log("GLB 로드 완료");
     });
 
 

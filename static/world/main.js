@@ -729,15 +729,17 @@
             
     
             console.log("🟢 fetch 시작 전");
+
             // fetch("/gpt_test",  에서 아래 경로로 변경 
             fetch("https://flask-server-v2.onrender.com/gpt_test", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: msg })
             })
+
             .then(res => res.json())
-    
-    
+            
+
     
             //  GPT 응답 ui 부분 수정 부분
             .then(data => {
@@ -924,7 +926,31 @@
                     }
                 };
                 */
-    
+
+
+                // 🔽🔽🔽 여기에 gTTS 영상 생성용 API 호출 추가 🔽🔽🔽
+                fetch("https://flask-server-v2.onrender.com/gpt_voice", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: data.response })
+                })
+                .then(() => {
+                    console.log("✅ gTTS 음성 영상 생성 완료");
+                    if (window.gttsVideoElement) {
+                        window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/static/audio/gpt_response.mp4";
+                        window.gttsVideoElement.currentTime = 0;
+                        window.gttsVideoElement.play();
+                        showDebug("🟢 GPT 응답 음성 영상 재생 시작");
+                    }
+                })
+                .catch(err => {
+                    console.error("❌ gTTS 요청 실패:", err);
+                });
+
+
+
+
+
     
             })
             

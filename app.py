@@ -320,6 +320,40 @@ def test_gtts():
 
 
 
+@app.route("/gpt_voice", methods=["POST"])
+def gpt_voice():
+    try:
+        data = request.get_json()
+        gpt_text = data.get("text", "").strip()
+
+        if not gpt_text:
+            return jsonify({"error": "No text provided"}), 400
+
+        # gTTS 생성
+        tts = gTTS(text=gpt_text, lang="ko")
+        mp3_path = "static/audio/gpt_response.mp3"
+        mp4_path = "static/audio/gpt_response.mp4"
+
+        tts.save(mp3_path)
+
+        # ffmpeg로 mp3 → mp4
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", mp3_path, mp4_path],
+            check=True
+        )
+
+        return jsonify({"status": "success"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
 # fast-whisper 로컬 테스트용 
 """ 
 @app.route("/whisper", methods=["POST"])

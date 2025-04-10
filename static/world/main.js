@@ -585,8 +585,13 @@
 
             if (!msg || msg.length === 0) {
                 msg = document.getElementById("gptInput")?.value?.trim() || "";
-                console.log("⚠️ 최종적으로 입력이 비어 있음");
-                return;
+                if (!msg || msg.length === 0) {
+                    console.log("❌ 최종적으로 입력이 비어있음");
+                    showDebug("❌ 최종적으로 입력이 비어있음");
+                    return;
+                }
+                //console.log("⚠️ 최종적으로 입력이 비어 있음");
+                //return;
             }
 
             console.log("✅ fetch 실행 - GPT에 보낼 메시지:", msg);
@@ -599,11 +604,11 @@
             console.log("🟢 sendToGPT 함수 실행됨");
             showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
     
-            // 이 부분은 텍스트 기반 GPT 입력 ui 부분
-            msg = document.getElementById("gptInput").value;
+            // 이 부분은 텍스트 기반 GPT 입력 ui 부분 인데 일단 아래 한 줄만 생략함
+            // msg = document.getElementById("gptInput").value;
             if (!msg) {
-                console.log("❌ 최종적으로 입력이 비어있음");
-                showDebug("❌ 최종적으로 입력이 비어있음");
+                console.log("❌ 최종적으로 입력이 비어있을까?");
+                showDebug("❌ 최종적으로 입력이 비어있을까?");
                 return;
             }
             

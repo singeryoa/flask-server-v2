@@ -236,38 +236,29 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     // ✅ 비디오 판 생성
     if (!window.videoPlane) {
-        // 1. HTMLVideoElement 직접 생성
+        // 1. HTMLVideoElement 직접 생성 (src만 지정하고 자동 재생 X)
         const video = document.createElement("video");
         video.crossOrigin = "anonymous";
         video.loop = false;
-        video.autoplay = false;
+        video.autoplay = false;   // ❗자동 재생 금지
         video.muted = true;
-        video.playsInline = true;
-        
-        // 비디오 소스 설정
-        video.src = "https://flask-server-v2.onrender.com/gpt_video";
-        
-        // 비디오 로드 이벤트 리스너
-        video.addEventListener("loadeddata", () => {
-            console.log("🎬 비디오 데이터 로드 완료");
-            // 비디오 재생은 sendToGPT 함수에서 처리
-        });
+        video.playsInline = true;  // iOS 대응
         
         // 2. Babylon VideoTexture 생성
-        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false);
+        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false, true);
         videoTexture.hasAlpha = true;
         
         // 3. 머티리얼 생성
         const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
         videoMaterial.diffuseTexture = videoTexture;
-        videoMaterial.backFaceCulling = false;
+        videoMaterial.backFaceCulling = false;  // 뒤에서도 보이게
         videoMaterial.alpha = 1;
-        videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
         
         // 4. 비디오 평면 생성
         const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
         plane.position = new BABYLON.Vector3(0, 2, 0);
-        plane.rotation.x = Math.PI;
+        plane.rotation.x = Math.PI;     // 회전 추가 (X축 기준 180도 뒤집기)
         plane.material = videoMaterial;
         plane.isVisible = true;
         plane.visibility = 1;
@@ -277,8 +268,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         window.videoTexture = videoTexture;
         window.videoElement = video;
         
-        // 비디오 평면 렌더링 순서 설정
-        window.videoPlane.renderingGroupId = 2;
+        // 자동 재생 방지를 위해 명시적으로 중단
+        video.pause();
+        video.currentTime = 0;
+        
+        window.videoPlane.renderingGroupId = 2;   // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
         
         console.log("✅ 비디오 평면 생성 완료");
     }

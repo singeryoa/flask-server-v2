@@ -572,7 +572,7 @@
             showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
     
             // 이 부분은 텍스트 기반 GPT 입력 ui 부분
-            const msg = document.getElementById("gptInput").value;
+            msg = document.getElementById("gptInput").value;
             if (!msg) {
                 console.log("❌ 입력이 비어있음");
                 showDebug("❌ 입력이 비어있음");

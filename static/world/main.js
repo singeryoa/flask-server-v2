@@ -349,14 +349,29 @@
 
 
                         
-    
+                            let data;
                             try {
                                 const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
                                     method: "POST",
                                     body: formData
                                 });
 
-                                const data = await res.json();
+                                
+                                const text = await res.text();
+                                console.log("🟢 Whisper 응답 원문:", text);
+
+                                try {
+                                    data = JSON.parse(text);
+                                } catch (jsonErr) {
+                                    console.error("❌ 구체 JSON 파싱 실패:", jsonErr.message);
+                                    alert("❌ 구체 내 Whisper JSON 파싱 실패: " + jsonErr.message);
+                                    showDebug("📦 구체 내 Whisper JSON 파싱 실패");
+                                    return;
+                                }
+
+
+
+
                                 const recognizedText = data.text?.trim();  // Whisper 결과 저장
                                 console.log("🧠 Whisper 텍스트:", recognizedText);
 
@@ -376,8 +391,9 @@
                                     showDebug("📦 구체 내 Whisper 실패");
                                 }
                             } catch (err) {
-                                alert("⚠️ 구체 내 Whisper JSON 파싱 실패: " + err.message);
-                                showDebug("📦 구체 내 Whisper JSON 파싱 실패");
+                                console.error("❌ Whisper 서버 통신 실패:", err);
+                                alert("⚠️ Whisper 서버 통신 실패: " + err.message);
+                                showDebug("📦 Whisper 서버 통신 실패");
                             }
                         };
     

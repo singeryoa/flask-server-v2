@@ -725,6 +725,8 @@
                 // GPT 응답 처리 이후, 음성 영상 재생 시작
     
                 if (window.videoElement) {
+                    // 영상 출력 테스트 완료되면 이 바로 아래 줄 삭제
+                    window.videoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
                     window.videoElement.currentTime = 0;
                     window.videoElement.play();
                     showDebug("🟢 영상 플레이 완료");

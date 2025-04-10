@@ -26,6 +26,13 @@ import uuid
 # import whisper
 # from faster_whisper import WhisperModel
 
+from gtts import gTTS
+import subprocess
+
+import logging
+
+
+
 app = Flask(__name__, static_url_path="", static_folder="static")
 # app = Flask(__name__)  위로 변경.
 # Flask에서 static 경로를 root처럼 사용하게 만들기

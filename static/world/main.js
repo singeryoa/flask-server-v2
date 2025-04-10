@@ -35,13 +35,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     // const engine = new BABYLON.Engine(canvas, true);  최적화를 위해 위 5줄로 변경
 
     const scene = new BABYLON.Scene(engine);
-    // scene.clearColor = new BABYLON.Color3(0.8, 0.9, 1.0); // 밝은 배경, 이 코드는 없어도 됨
-
-    // GLB 모델: 최대 3~5MB 이하 권장 (10MB 이상은 Quest에서 로딩 문제 발생)
-    // 스카이박스: 512px~1024px 사이 해상도 가장 적합
-    // 2048px 이상 → VR 모드에서 로딩 실패 가능성 ↑
-    // Babylon.js 씬 최적화
-    // main.js의 createScene() 함수 최상단에 아래 추가:
     scene.autoClear = true;
     scene.autoClearDepthAndStencil = true;
     scene.useRightHandedSystem = false;
@@ -405,7 +398,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
     // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
     // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
-    BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
+    BABYLON.SceneLoader.Append("/assets/", "mole.glb", scene, function () {
         const root = scene.meshes[scene.meshes.length - 1];
         root.position = new BABYLON.Vector3(3, 0, 0);
         root.getChildMeshes().forEach(m => {

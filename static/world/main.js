@@ -357,11 +357,19 @@
     
                             try {
                                 const data = await res.json();
+                                const whisperText = data.transcript || data.text; // 둘 중 하나라도 있으면 받기
+
                                 // 바로 아래에서 data.text 를 아래처럼 3곳 변경함
-                                if (data.transcript) {
-                                    logToDebug("🧠 구체 GPT 질문 인식됨: " + data.transcript);
+                                // if (data.transcript)   여기를 아래처럼 변경
+                                if (whisperText && whisperText.trim().length > 0) {
+
+                                    logToDebug("🧠 구체 GPT 질문 인식됨: " + whisperText);
+                                    // logToDebug("🧠 구체 GPT 질문 인식됨: " + data.transcript);
                                     showDebug("📦 구체 GPT 질문 인식됨");
-                                    sendToGPT(data.transcript);  // → GPT 응답 함수 호출
+
+                                    // 두줄 아래에서 아래로 변경
+                                    sendToGPT(whisperText.trim());  // 반드시 trim 해서 전달
+                                    // sendToGPT(data.transcript);  // → GPT 응답 함수 호출
                                 } else {
                                     alert("❌ 구체 내 Whisper 실패: " + (data.error || "에러 없음"));
                                     showDebug("📦 구체 내 Whisper 실패");

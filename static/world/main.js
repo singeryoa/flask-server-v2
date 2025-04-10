@@ -235,88 +235,52 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     
     // ✅ 비디오 판 생성
-
     if (!window.videoPlane) {
-        // 1. HTMLVideoElement 직접 생성 (src만 지정하고 자동 재생 X)
+        // 1. HTMLVideoElement 직접 생성
         const video = document.createElement("video");
-
-        // 바로 아래 1줄 코드는 기존 존재하는 mp4 영상 파일 테스트 목적이므로 삭제 처리함
-        // video.src = "https://flask-server-v2.onrender.com/gpt_video";
         video.crossOrigin = "anonymous";
         video.loop = false;
-        video.autoplay = false;   // ❗자동 재생 금지
+        video.autoplay = false;
         video.muted = true;
-        video.playsInline = true;  // iOS 대응
-        // window.videoElement = video;      //  뒤로 옮김
-
+        video.playsInline = true;
         
+        // 비디오 소스 설정
+        video.src = "https://flask-server-v2.onrender.com/gpt_video";
+        
+        // 비디오 로드 이벤트 리스너
         video.addEventListener("loadeddata", () => {
-            console.log("🎬 리스너 : loaded 데이터");
-            // video.play();  sendGPT 구문 내로 이동됨
+            console.log("🎬 비디오 데이터 로드 완료");
+            // 비디오 재생은 sendToGPT 함수에서 처리
         });
         
-
-        console.log("📦 비디오 엘리먼트 생성:", video);
-        showDebug("📦 비디오 엘리먼트트 생성:");
-    
         // 2. Babylon VideoTexture 생성
-        // 원인은 Babylon.js의 VideoTexture가 생성될 때 HTMLVideoElement.play()를 내부적으로 
-        // 자동 실행하는 구조 때문일 가능성이 높음.  
-        // 바로 아래 4번째 인자인 generateMipMaps = false 로 변경
-        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false, true);
+        const videoTexture = new BABYLON.VideoTexture("gptVideo", video, scene, false);
         videoTexture.hasAlpha = true;
-        console.log("📦 비디오 텍스쳐 생성:");
-        showDebug("📦 비디오 텍스쳐 생성:");
-
+        
         // 3. 머티리얼 생성
         const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
         videoMaterial.diffuseTexture = videoTexture;
-        videoMaterial.backFaceCulling = false;  // 뒤에서도 보이게
+        videoMaterial.backFaceCulling = false;
         videoMaterial.alpha = 1;
-        videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1); // 밝기 보정
-
-        console.log("📦 비디오 머티리얼 생성:", video);
-        showDebug("📦 비디오 머티리얼 생성:");
-    
+        videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        
         // 4. 비디오 평면 생성
         const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
         plane.position = new BABYLON.Vector3(0, 2, 0);
-        plane.rotation.x = Math.PI;     // 회전 추가 (X축 기준 180도 뒤집기)
+        plane.rotation.x = Math.PI;
         plane.material = videoMaterial;
         plane.isVisible = true;
         plane.visibility = 1;
-        console.log("📺 비디오 평면 생성 시작");
-        showDebug("📺 비디오 평면 생성 시작");
-    
         
         // 5. 윈도우에 저장
         window.videoPlane = plane;
         window.videoTexture = videoTexture;
-        window.videoElement = video;          // 앞에서 이 위치로 옮김
-        console.log("📦 윈도우에 저장");
-        showDebug("📦 윈도우에 저장:");
-
-
-        // 자동 재생 방지를 위해 명시적으로 중단
-        video.pause();
-        video.currentTime = 0;
-
-        window.videoPlane.renderingGroupId = 2;   // 비디오판 → renderGroupId = 2 (더 뒤쪽에 렌더링되도록)
-    
-
-        // 6. 사용자 클릭 시 재생 트리거
-        // 일단 생략
-        /* 
-        scene.onPointerDown = () => {
-            if (video.paused) {
-                video.play();
-            }
-        };
-        */
-
+        window.videoElement = video;
+        
+        // 비디오 평면 렌더링 순서 설정
+        window.videoPlane.renderingGroupId = 2;
+        
         console.log("✅ 비디오 평면 생성 완료");
-        showDebug("📦 비디오 평면 생성 완료:");
-
     }
     
 
@@ -398,7 +362,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
     // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
     // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
-    BABYLON.SceneLoader.Append("/assets/", "mole.glb", scene, function () {
+    BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
         const root = scene.meshes[scene.meshes.length - 1];
         root.position = new BABYLON.Vector3(3, 0, 0);
         root.getChildMeshes().forEach(m => {
@@ -599,6 +563,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             console.log("🟢 GPT 응답 데이터 수신:", data);
             showDebug("🟢 GPT 응답");
 
+            // gTTS 처리 시작 로그
+            console.log("🟢 gTTS 처리 시작");
+            showDebug("🟢 gTTS 처리 시작");
+
             // 여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
             // 안전하게 텍스처 컨텍스트 가져오기
             const texture = npcMat.diffuseTexture.getContext();
@@ -674,7 +642,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             if (window.videoElement) {
                 window.videoElement.currentTime = 0;
-                window.videoElement.play();
+                window.videoElement.play().catch(e => {
+                    console.error("비디오 재생 실패:", e);
+                    showDebug("❌ 비디오 재생 실패");
+                });
                 showDebug("🟢 영상 플레이 완료");
             }
 

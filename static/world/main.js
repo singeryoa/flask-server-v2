@@ -35,6 +35,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     // const engine = new BABYLON.Engine(canvas, true);  최적화를 위해 위 5줄로 변경
 
     const scene = new BABYLON.Scene(engine);
+    // scene.clearColor = new BABYLON.Color3(0.8, 0.9, 1.0); // 밝은 배경, 이 코드는 없어도 됨
+
+    // GLB 모델: 최대 3~5MB 이하 권장 (10MB 이상은 Quest에서 로딩 문제 발생)
+    // 스카이박스: 512px~1024px 사이 해상도 가장 적합
+    // 2048px 이상 → VR 모드에서 로딩 실패 가능성 ↑
+    // Babylon.js 씬 최적화
+    // main.js의 createScene() 함수 최상단에 아래 추가:
     scene.autoClear = true;
     scene.autoClearDepthAndStencil = true;
     scene.useRightHandedSystem = false;
@@ -398,86 +405,47 @@ window.addEventListener('DOMContentLoaded', async () => {
     // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
     // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
     // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
-    BABYLON.SceneLoader.Append("/assets/", "mole.glb", scene, function (scene) {
-        console.log("✅ GLB 파일 로딩 완료");
-        showDebug("✅ GLB 파일 로딩 완료");
-        
-        // 로딩된 GLB 오브젝트의 위치를 NPC와 약간 떨어지게 설정
-        scene.meshes.forEach(mesh => {
-            if (mesh.name !== "ground") {
-                mesh.position = new BABYLON.Vector3(2, 0, 2);
+    BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
+        const root = scene.meshes[scene.meshes.length - 1];
+        root.position = new BABYLON.Vector3(3, 0, 0);
+        root.getChildMeshes().forEach(m => {
+            if (m.material && m.material.albedoTexture) {
+                m.material.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
+                m.material.alpha = 0.9;
             }
         });
-    }, function (evt) {
-        // 로딩 진행률 표시
-        const progress = (evt.loaded / evt.total * 100).toFixed(2);
-        console.log(`GLB 로딩 중: ${progress}%`);
-        showDebug(`GLB 로딩 중: ${progress}%`);
+        console.log("✅ GLB 로드 완료");
+        showDebug("✅ GLB 로드 완료");
+    }, function (progress) {
+        // 로딩 진행 상황 표시
+        const percent = Math.floor(progress.loaded / progress.total * 100);
+        showDebug(`GLB 로딩 중: ${percent}%`);
     }, function (error) {
-        console.error("❌ GLB 파일 로딩 실패:", error);
-        showDebug("❌ GLB 파일 로딩 실패");
+        console.error("❌ GLB 로드 실패:", error);
+        showDebug("❌ GLB 로드 실패");
     });
 
 
 
 
 
-    // VR 초기화 함수
+    // 텔레포트. VR 모드 지원
     const initVR = async () => {
         try {
-            // VR 지원 여부 확인
-            if (!navigator.xr) {
-                console.log("VR이 지원되지 않는 브라우저입니다.");
-                return;
-            }
-
-            const xr = await scene.createDefaultXRExperienceAsync({
-                floorMeshes: [ground],
-                disableDefaultUI: true
+            const xrHelper = await scene.createDefaultXRExperienceAsync({
+                floorMeshes: [ground]
             });
-
+            xrHelper.teleportation.enabled = true;
             console.log("✅ VR 초기화 완료");
+            showDebug("✅ VR 초기화 완료");
         } catch (error) {
-            console.error("VR 초기화 실패:", error);
+            console.error("❌ VR 초기화 실패:", error);
+            showDebug("❌ VR 초기화 실패");
         }
     };
 
-    // 비디오 텍스처 생성
-    const createVideoTexture = () => {
-        try {
-            const video = document.createElement("video");
-            video.crossOrigin = "anonymous";
-            video.playsInline = true;
-            video.autoplay = true;
-            video.loop = true;
-            video.src = "/assets/background.mp4";
-            
-            const videoTexture = new BABYLON.VideoTexture("videoTex", video, scene, true);
-            videoTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            videoTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-            
-            const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
-            videoMaterial.diffuseTexture = videoTexture;
-            videoMaterial.emissiveTexture = videoTexture;
-            videoMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-            
-            const videoPlane = BABYLON.MeshBuilder.CreatePlane("videoPlane", {width: 20, height: 20}, scene);
-            videoPlane.material = videoMaterial;
-            videoPlane.position.y = 10;
-            videoPlane.rotation.x = Math.PI / 2;
-            
-            // 비디오 재생 시작
-            video.play().catch(e => console.error("비디오 재생 실패:", e));
-            
-            console.log("✅ 비디오 평면 생성 완료");
-        } catch (error) {
-            console.error("비디오 텍스처 생성 실패:", error);
-        }
-    };
-
-    // 초기화 함수 호출
+    // VR 초기화 호출
     initVR();
-    createVideoTexture();
 
 
 

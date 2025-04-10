@@ -562,7 +562,11 @@
     
         // GPT로 메시지 전송
         // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
-        window.sendToGPT = function () {
+        window.sendToGPT = function (msg) {
+
+            if (!msg) {
+                msg = document.getElementById("gptInput").value;
+            }
     
             console.log("🟢 sendToGPT 함수 실행됨");
             showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
@@ -571,6 +575,7 @@
             const msg = document.getElementById("gptInput").value;
             if (!msg) {
                 console.log("❌ 입력이 비어있음");
+                showDebug("❌ 입력이 비어있음");
                 return;
             }
             

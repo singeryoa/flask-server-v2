@@ -351,11 +351,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
     // avatar.glb 로드
-    // SceneLoader.Append("/assets/", "avatar.glb", ...) 수정 완료됨
-    // function (scene) 에서 function () 로 변경함
-    // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
-    // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
-    // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
     BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
         const root = scene.meshes[scene.meshes.length - 1];
         root.position = new BABYLON.Vector3(3, 0, 0);

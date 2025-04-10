@@ -348,27 +348,28 @@
 
 
 
-
-
-                            const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
-                                method: "POST",
-                                body: formData
-                            });
+                        
     
                             try {
+                                const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                                    method: "POST",
+                                    body: formData
+                                });
+
                                 const data = await res.json();
-                                const whisperText = data.transcript || data.text; // 둘 중 하나라도 있으면 받기
+                                const recognizedText = data.text?.trim();  // Whisper 결과 저장
+                                console.log("🧠 Whisper 텍스트:", recognizedText);
 
                                 // 바로 아래에서 data.text 를 아래처럼 3곳 변경함
                                 // if (data.transcript)   여기를 아래처럼 변경
-                                if (whisperText && whisperText.trim().length > 0) {
+                                if (recognizedText && recognizedText.length > 0) {
 
                                     logToDebug("🧠 구체 GPT 질문 인식됨: " + whisperText);
                                     // logToDebug("🧠 구체 GPT 질문 인식됨: " + data.transcript);
                                     showDebug("📦 구체 GPT 질문 인식됨");
 
                                     // 두줄 아래에서 아래로 변경
-                                    sendToGPT(whisperText.trim());  // 반드시 trim 해서 전달
+                                    sendToGPT(recognizedText);  // 반드시 trim 해서 전달
                                     // sendToGPT(data.transcript);  // → GPT 응답 함수 호출
                                 } else {
                                     alert("❌ 구체 내 Whisper 실패: " + (data.error || "에러 없음"));
@@ -583,6 +584,7 @@
             showDebug("🟢 Whisper 입력 내용");
 
             if (!msg || msg.length === 0) {
+                msg = document.getElementById("gptInput")?.value?.trim() || "";
                 console.log("⚠️ 최종적으로 입력이 비어 있음");
                 return;
             }
@@ -607,9 +609,8 @@
             
     
             console.log("🟢 fetch 시작 전");
-            // fetch("/gpt_test",  에서 아래 경로로 변경  1
-            // fetch("https://flask-server-v2.onrender.com/gpt_test",    2
-            fetch("/gpt", {
+            // fetch("/gpt_test",  에서 아래 경로로 변경 
+            fetch("https://flask-server-v2.onrender.com/gpt_test", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: msg })

@@ -470,41 +470,85 @@
 
         gptSpeechCylinder.actionManager = new BABYLON.ActionManager(scene);
         gptSpeechCylinder.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
-                
-                // ✅ 기존 입력창이 아닌, 가장 마지막 GPT 응답 텍스트 가져오기
-                const lastAnswer = window.lastGptResponse?.trim();
-                
-                if (!lastAnswer || lastAnswer.length === 0) {
-                    showDebug("❌ GPT 응답 텍스트가 비어있음");
-                    return;
-                }
-
-                showDebug("📤 GPT 응답을 gTTS 음성으로 전송 중...");
-
+          new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
+            showDebug("🎤 원기둥 클릭됨: 음성 녹음 시작");
+        
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              const mediaRecorder = new MediaRecorder(stream);
+              const chunks = [];
+        
+              mediaRecorder.ondataavailable = e => chunks.push(e.data);
+              mediaRecorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'audio/mp3' });
+                const formData = new FormData();
+                formData.append("file", blob, "voice.mp3");
+        
                 try {
-                    const res = await fetch("https://flask-server-v2.onrender.com/gtts", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ text: lastAnswer })
-                    });
-
-                    if (!res.ok) {
-                        throw new Error("서버 응답 오류");
-                    }
-
-                    // 응답 받은 후 mp4 영상 재생
-                    window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";  // 동일 파일 재사용
+                  const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                    method: "POST",
+                    body: formData
+                  });
+        
+                  const textData = await res.text();
+                  const data = JSON.parse(textData);
+                  const userText = data.text?.trim();
+        
+                  if (!userText) {
+                    showDebug("❌ Whisper 인식 실패");
+                    return;
+                  }
+        
+                  showDebug("🧠 Whisper 인식 완료 → GPT 요청 중...");
+        
+                  // GPT 요청
+                  const gptRes = await fetch("https://flask-server-v2.onrender.com/gpt_test", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userText })
+                  });
+        
+                  const gptData = await gptRes.json();
+                  const gptResponse = gptData.response?.trim();
+        
+                  if (!gptResponse) {
+                    showDebug("❌ GPT 응답 없음");
+                    return;
+                  }
+        
+                  showDebug("🟢 GPT 응답 수신 → gTTS로 전송 중...");
+        
+                  // gTTS 변환 요청
+                  await fetch("https://flask-server-v2.onrender.com/gtts", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: gptResponse })
+                  });
+        
+                  // 영상 재생
+                  if (window.gttsVideoElement) {
+                    window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/static/audio/gpt_response.mp4";
                     window.gttsVideoElement.currentTime = 0;
                     window.gttsVideoElement.play();
-
-                    showDebug("✅ GPT 음성 영상 재생 시작");
-                } catch (err) {
-                    console.error("❌ GPT 음성 전송 실패:", err);
-                    showDebug("❌ GPT 음성 영상 요청 실패");
+                    showDebug("✅ GPT 응답 영상 재생 시작");
+                  }
+        
+                } catch (e) {
+                  console.error("❌ 에러 발생:", e);
+                  showDebug("❌ Whisper 또는 GPT 에러 발생");
                 }
-            })
+              };
+        
+              mediaRecorder.start();
+              setTimeout(() => mediaRecorder.stop(), 5000);
+        
+            } catch (err) {
+              console.error("❌ 마이크 접근 실패:", err);
+              showDebug("❌ 마이크 접근 실패: " + err.message);
+            }
+          })
         );
+            
 
 
 
@@ -822,6 +866,8 @@
 
                 // ✅ GPT 응답을 전역 변수에 저장
                 window.lastGptResponse = data.response;  
+                console.log("📌 GPT 응답 저장됨:", window.lastGptResponse);
+                showDebug("📦 GPT 응답 저장됨");
 
     
     
@@ -934,6 +980,8 @@
                 */
 
 
+                
+                /* 
                 // 🔽🔽🔽 여기에 gTTS 영상 생성용 API 호출 추가 🔽🔽🔽
                 fetch("https://flask-server-v2.onrender.com/gpt_voice", {
                     method: "POST",
@@ -952,6 +1000,7 @@
                 .catch(err => {
                     console.error("❌ gTTS 요청 실패:", err);
                 });
+                */
 
 
 

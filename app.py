@@ -89,6 +89,9 @@ def init_db():
         )
 
 
+
+
+
 @app.route("/")
 def index():
     init_db()
@@ -229,7 +232,13 @@ def gpt_test():
         logging.info("✅ GPT 처리 중 에러")
 
 
-
+    try:
+        tts = gTTS(gpt_response, lang='ko')
+        tts.save("audio/response.mp3")
+    except Exception as e:
+        print("❌ gTTS 오류:", e)
+        return jsonify({"error": "gTTS 실패"}), 500
+    return jsonify({"response": gpt_response})
 
 
 """
@@ -358,6 +367,8 @@ def whisper():
             os.remove(response_path)
             # 바로 위 코드는 도입 시 충돌 주의 (단일 사용자 테스트에선 OK) 
     
+
+
 
 
 

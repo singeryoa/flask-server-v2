@@ -1,4 +1,3 @@
-
 // 최상단에 async 함수로 전체 묶기
 // 기존 코드는 바로 아래와 같음. await 기능을 추가하며 async 함수 추가
 // window.addEventListener('DOMContentLoaded', () => {
@@ -392,47 +391,47 @@ window.addEventListener('DOMContentLoaded', async () => {
     // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
     // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
     // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
-    BABYLON.SceneLoader.Append("/assets/", "mole.glb", scene, function () {
+    BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
         const root = scene.meshes[scene.meshes.length - 1];
-        root.position = new BABYLON.Vector3(3, 0, 0); // NPC에서 약간 떨어진 위치
+        root.position = new BABYLON.Vector3(3, 0, 0);
         root.getChildMeshes().forEach(m => {
             if (m.material && m.material.albedoTexture) {
                 m.material.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
                 m.material.alpha = 0.9;
             }
         });
-        console.log("GLB 로드 완료");
+        console.log("✅ GLB 로드 완료");
+        showDebug("✅ GLB 로드 완료");
+    }, function (progress) {
+        // 로딩 진행 상황 표시
+        const percent = Math.floor(progress.loaded / progress.total * 100);
+        showDebug(`GLB 로딩 중: ${percent}%`);
+    }, function (error) {
+        console.error("❌ GLB 로드 실패:", error);
+        showDebug("❌ GLB 로드 실패");
     });
 
 
 
 
 
-    // 텔레포트. VR 모드 지원   아래는 기존 코드 1줄.  그 아래는 퀘스트 콘트롤러로 텔레포트 이동 기능.
-    // 주의: ground 객체는 미리 BABYLON.MeshBuilder.CreateGround(...)로 생성돼 있어야 합니다.
-    // const xrHelperPromise = scene.createDefaultXRExperienceAsync({});
-    const xrHelper = await scene.createDefaultXRExperienceAsync({
-        floorMeshes: [ground]  // 기존 바닥 메쉬를 지정해줘야 텔레포트 가능
-    });
-    xrHelper.teleportation.enabled = true;
+    // 텔레포트. VR 모드 지원
+    const initVR = async () => {
+        try {
+            const xrHelper = await scene.createDefaultXRExperienceAsync({
+                floorMeshes: [ground]
+            });
+            xrHelper.teleportation.enabled = true;
+            console.log("✅ VR 초기화 완료");
+            showDebug("✅ VR 초기화 완료");
+        } catch (error) {
+            console.error("❌ VR 초기화 실패:", error);
+            showDebug("❌ VR 초기화 실패");
+        }
+    };
 
-
-
-    // 텔레포트를 위한 새로운 바닥 메시를 만들 경우, 아래 코드 이용. 기존 ground 메시 위에 투명 처리.
-    /*
-    const teleportFloor = BABYLON.MeshBuilder.CreateGround("teleFloor", { width: 20, height: 20 }, scene);
-    teleportFloor.position.y = 0.01;  // 기존 메시와 겹칠 경우 살짝 위로
-    teleportFloor.isVisible = false; // 플레이어 눈에는 안 보이게
-
-
-    const xrHelperPromise = scene.createDefaultXRExperienceAsync().then((xrHelper) => {
-        const featuresManager = xrHelper.baseExperience.featuresManager;
-        featuresManager.enableFeature(BABYLON.WebXRFeatureName.TELEPORTATION, 'stable', {
-            floorMeshes: [teleportFloor]  
-        });
-    });
-    */
-
+    // VR 초기화 호출
+    initVR();
 
 
 
@@ -513,7 +512,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 
 
-
     // postman 으로 whisper 를 빠르게 로컬 테스트 시 사용하는 코드
     // GPT 음성 입력 클릭하여 음성을 받고 GPT 가 응답하여 mp4로 변환 후, 음성이 포함된 영상으로 응답
     /*
@@ -569,12 +567,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // GPT로 메시지 전송
     // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
-    window.sendToGPT = function () {
-
+    window.sendToGPT = function() {
         console.log("🟢 sendToGPT 함수 실행됨");
-        showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력
+        showDebug("🟢 sendToGPT 함수 실행됨");
 
-        // 이 부분은 텍스트 기반 GPT 입력 ui 부분
         const msg = document.getElementById("gptInput").value;
         if (!msg) {
             console.log("❌ 입력이 비어있음");
@@ -584,25 +580,17 @@ window.addEventListener('DOMContentLoaded', async () => {
         
         showDebug("🟢 fetch 시작 전");
         console.log("🟢 fetch 시작 전");
-        // fetch("/gpt_test",  에서 아래 경로로 변경
+        
         fetch("https://flask-server-v2.onrender.com/gpt_test", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: msg })
         })
         .then(res => res.json())
-
-
-
-        //  GPT 응답 ui 부분 수정 부분
         .then(data => {
             console.log("✅ GPT 응답:", data.response);
             console.log("🟢 GPT 응답 데이터 수신:", data);
             showDebug("🟢 GPT 응답");
-        
-
-
-
 
             // 여기 묶음은 질문판에서 출력 부분 제거 하기 위해 주석 처리
             // 안전하게 텍스처 컨텍스트 가져오기
@@ -670,61 +658,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             // UI 숨기기
             document.getElementById("gptUI").style.display = "none";
 
-
-
-            // Babylon.js: 응답 영상 재생 기능 추가
-            // 영상 텍스처 재생용 plane 생성 (최초 1회만)
-            /* 
-            if (!window.videoPlane) {
-                const videoTexture = new BABYLON.VideoTexture(
-                    "gptVideo",
-                    "https://flask-server-v2.onrender.com/gpt_video",
-                    scene,
-                    true,
-                    true,
-                    BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
-                    null,
-                    {
-                        autoPlay: true,
-                        loop: false,
-                        muted: true
-                    }
-                
-                );
-                const videoMaterial = new BABYLON.StandardMaterial("videoMat", scene);
-                videoMaterial.diffuseTexture = videoTexture;
-
-                const plane = BABYLON.MeshBuilder.CreatePlane("videoPlane", { width: 4, height: 2.25 }, scene);
-                plane.position = new BABYLON.Vector3(0, 2, 0);  // 카메라 앞쪽
-                plane.material = videoMaterial;
-
-                window.videoPlane = plane;
-                window.videoTexture = videoTexture;
-
-                // ✅ 바로 여기! 비디오 생성 후 위치
-                scene.onPointerDown = () => {
-                    if (videoTexture.video.paused) {
-                        videoTexture.video.play();
-                    }
-                };
-
-
-            } else {
-                window.videoTexture.video.currentTime = 0;
-                window.videoTexture.video.play();
-            }
-            */
-
-
-
-            // 6. 사용자 클릭 시 영상 재생 트리거
-            /* 일단 생략
-            scene.onPointerDown = () => {
-                if (video.paused) {
-                    video.play();
-                }
-            };
-            */
 
 
             // GPT 응답 이후 재생만 하기 (sendToGPT() 내부)
@@ -812,7 +745,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         */
 
         .catch(err => {
-
             console.log("🔥 GPT 에러 발생:", err);
             showDebug("🟢 GPT 에러 발생");
             // alert("에러 발생: " + err);

@@ -562,15 +562,17 @@
     
         // GPT로 메시지 전송
         // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
-        window.sendToGPT = function (msg = "") {
+        window.sendToGPT = function (msgFromWhisper = "") {
 
             // VR 모드에서 msg를 넘겨받지 않았다면, PC 입력창 값을 가져옴
-            if (!msg || msg.trim() === "") {
-                msg = document.getElementById("gptInput")?.value;
+            let msg = msgFromWhisper.trim();
+            if (!msg) {
+                msg = document.getElementById("gptInput")?.value?.trim() || "";
+            }
                 // 아래 두 줄은 위 한줄로 대체
                 // const inputValue = document.getElementById("gptInput")?.value;
                 // msg = inputValue?.trim() || "";
-    }
+        
     
             console.log("🟢 sendToGPT 함수 실행됨");
             showDebug("🟢 sendToGPT 함수 실행됨");  // 여기에 디버그 출력

@@ -35,21 +35,28 @@ window.addEventListener('DOMContentLoaded', async () => {
     // const engine = new BABYLON.Engine(canvas, true);  최적화를 위해 위 5줄로 변경
 
     const scene = new BABYLON.Scene(engine);
-    // scene.clearColor = new BABYLON.Color3(0.8, 0.9, 1.0); // 밝은 배경, 이 코드는 없어도 됨
-
-    // GLB 모델: 최대 3~5MB 이하 권장 (10MB 이상은 Quest에서 로딩 문제 발생)
-    // 스카이박스: 512px~1024px 사이 해상도 가장 적합
-    // 2048px 이상 → VR 모드에서 로딩 실패 가능성 ↑
-    // Babylon.js 씬 최적화
-    // main.js의 createScene() 함수 최상단에 아래 추가:
     scene.autoClear = true;
     scene.autoClearDepthAndStencil = true;
     scene.useRightHandedSystem = false;
-    engine.setHardwareScalingLevel(1.5); // 낮을수록 더 높은 해상도 (1.5~2 추천)
+    engine.setHardwareScalingLevel(1.5);
 
+    // 씬 로딩 완료 이벤트 추가
+    scene.onReadyObservable.add(() => {
+        console.log("✅ 씬 로딩 완료");
+        showDebug("✅ 씬 로딩 완료");
+    });
 
+    // 렌더링 루프 시작
+    engine.runRenderLoop(() => {
+        if (scene.isReady()) {
+            scene.render();
+        }
+    });
 
-
+    // 윈도우 리사이즈 이벤트
+    window.addEventListener("resize", () => {
+        engine.resize();
+    });
 
     // 카메라 + WASD 이동
     const camera = new BABYLON.UniversalCamera("UniCam", new BABYLON.Vector3(0, 2, -5), scene);
@@ -391,24 +398,24 @@ window.addEventListener('DOMContentLoaded', async () => {
     // https://flask-server-v2.onrender.com/assets/avatar.glb 접속 → 정상 다운로드 또는 뷰 되면 OK
     // 여러 오브젝트를 배치하고 싶은 경우, 아래처럼 여러 번 SceneLoader.Append() 또는 ImportMesh() 호출하세요.
     // 직접 좌표 설정하고 싶다면 ImportMesh()로 로드 후 .position.set(x,y,z) 처리도 가능
-    BABYLON.SceneLoader.Append("/static/world/assets/", "mole.glb", scene, function () {
-        const root = scene.meshes[scene.meshes.length - 1];
-        root.position = new BABYLON.Vector3(3, 0, 0);
-        root.getChildMeshes().forEach(m => {
-            if (m.material && m.material.albedoTexture) {
-                m.material.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-                m.material.alpha = 0.9;
+    BABYLON.SceneLoader.Append("/assets/", "mole.glb", scene, function (scene) {
+        console.log("✅ GLB 파일 로딩 완료");
+        showDebug("✅ GLB 파일 로딩 완료");
+        
+        // 로딩된 GLB 오브젝트의 위치를 NPC와 약간 떨어지게 설정
+        scene.meshes.forEach(mesh => {
+            if (mesh.name !== "ground") {
+                mesh.position = new BABYLON.Vector3(2, 0, 2);
             }
         });
-        console.log("✅ GLB 로드 완료");
-        showDebug("✅ GLB 로드 완료");
-    }, function (progress) {
-        // 로딩 진행 상황 표시
-        const percent = Math.floor(progress.loaded / progress.total * 100);
-        showDebug(`GLB 로딩 중: ${percent}%`);
+    }, function (evt) {
+        // 로딩 진행률 표시
+        const progress = (evt.loaded / evt.total * 100).toFixed(2);
+        console.log(`GLB 로딩 중: ${progress}%`);
+        showDebug(`GLB 로딩 중: ${progress}%`);
     }, function (error) {
-        console.error("❌ GLB 로드 실패:", error);
-        showDebug("❌ GLB 로드 실패");
+        console.error("❌ GLB 파일 로딩 실패:", error);
+        showDebug("❌ GLB 파일 로딩 실패");
     });
 
 

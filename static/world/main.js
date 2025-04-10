@@ -564,13 +564,20 @@
         // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
         window.sendToGPT = function (msgFromWhisper = "") {
 
-            // VR 모드에서 msg를 넘겨받지 않았다면, PC 입력창 값을 가져옴
-            let msg = msgFromWhisper.trim();
-    
+            console.log("🟢 sendToGPT() 호출됨 - 받은 whisper:", msgFromWhisper);
+            showDebug("🟢 sendToGPT() 호출됨 - 받은 whisper: " + msgFromWhisper);
+
+            let msg = "";
+            if (msgFromWhisper && typeof msgFromWhisper === "string") {
+                msg = msgFromWhisper.trim();
+                console.log("📦 Whisper msg 추출:", msg);
+            }
+
             if (!msg) {
-                let inputElement = document.getElementById("gptInput");
+                const inputElement = document.getElementById("gptInput");
                 if (inputElement && inputElement.value) {
                     msg = inputElement.value.trim();
+                    console.log("📦 gptInput에서 추출한 msg:", msg);
                 }
             }
 

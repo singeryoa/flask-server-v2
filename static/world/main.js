@@ -379,7 +379,7 @@
                                 // if (data.transcript)   여기를 아래처럼 변경
                                 if (recognizedText && recognizedText.length > 0) {
 
-                                    logToDebug("🧠 구체 GPT 질문 인식됨: " + whisperText);
+                                    logToDebug("🧠 구체 GPT 질문 인식됨: " + recognizedText);
                                     // logToDebug("🧠 구체 GPT 질문 인식됨: " + data.transcript);
                                     showDebug("📦 구체 GPT 질문 인식됨");
 

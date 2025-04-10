@@ -345,6 +345,11 @@
                             const formData = new FormData();
                             formData.append("file", blob, "response.mp3");
     
+
+
+
+
+
                             const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
                                 method: "POST",
                                 body: formData
@@ -352,10 +357,11 @@
     
                             try {
                                 const data = await res.json();
-                                if (data.text) {
-                                    logToDebug("🧠 구체 GPT 질문 인식됨: " + data.text);
+                                // 바로 아래에서 data.text 를 아래처럼 3곳 변경함
+                                if (data.transcript) {
+                                    logToDebug("🧠 구체 GPT 질문 인식됨: " + data.transcript);
                                     showDebug("📦 구체 GPT 질문 인식됨");
-                                    sendToGPT(data.text);  // → GPT 응답 함수 호출
+                                    sendToGPT(data.transcript);  // → GPT 응답 함수 호출
                                 } else {
                                     alert("❌ 구체 내 Whisper 실패: " + (data.error || "에러 없음"));
                                     showDebug("📦 구체 내 Whisper 실패");
@@ -564,14 +570,16 @@
         // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함
         window.sendToGPT = function (msgFromWhisper = "") {
 
-            let msg = msgFromWhisper?.trim() || "";
+            let msg = msgFromWhisper?.trim();
             console.log("🎯 Whisper 입력 내용:", msg);
+            showDebug("🟢 Whisper 입력 내용");
 
-            if (!msg) {
-                const inputEl = document.getElementById("gptInput");
-                if (inputEl) msg = inputEl.value.trim();
-                console.log("🧪 입력칸 내용 확인:", msg);
+            if (!msg || msg.length === 0) {
+                console.log("⚠️ 최종적으로 입력이 비어 있음");
+                return;
             }
+
+            console.log("✅ fetch 실행 - GPT에 보낼 메시지:", msg);
 
                 // 아래 두 줄은 위 한줄로 대체
                 // const inputValue = document.getElementById("gptInput")?.value;
@@ -591,8 +599,9 @@
             
     
             console.log("🟢 fetch 시작 전");
-            // fetch("/gpt_test",  에서 아래 경로로 변경
-            fetch("https://flask-server-v2.onrender.com/gpt_test", {
+            // fetch("/gpt_test",  에서 아래 경로로 변경  1
+            // fetch("https://flask-server-v2.onrender.com/gpt_test",    2
+            fetch("/gpt", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: msg })

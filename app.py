@@ -351,6 +351,28 @@ def gpt_voice():
 
 
 
+@app.route('/gtts', methods=['POST'])
+def gtts_speak():
+    data = request.get_json()
+    text = data.get("text", "").strip()
+
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    # gTTS 처리 및 저장 로직...
+    tts = gTTS(text=text, lang='ko')
+    tts.save("static/audio/gpt_response.mp3")
+
+    # ffmpeg 변환
+    subprocess.run([
+        "ffmpeg", "-y", "-i", "static/audio/gpt_response.mp3", "-c:v", "libx264",
+        "-c:a", "aac", "-b:a", "128k", "-shortest", "static/audio/gpt_response.mp4"
+    ])
+
+    return jsonify({"status": "success"}), 200
+
+
+
 
 
 

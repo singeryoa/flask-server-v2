@@ -795,6 +795,11 @@
                 showDebug("🟢 GPT 응답");
             
     
+                // ✅ GPT 응답을 전역 변수에 저장
+                window.lastGptResponse = data.response;  
+                console.log("📌 GPT 응답 저장됨:", window.lastGptResponse);
+                showDebug("📦 GPT 응답 저장됨");
+
     
     
     
@@ -863,11 +868,6 @@
     
                 // UI 숨기기
                 document.getElementById("gptUI").style.display = "none";
-
-                // ✅ GPT 응답을 전역 변수에 저장
-                window.lastGptResponse = data.response;  
-                console.log("📌 GPT 응답 저장됨:", window.lastGptResponse);
-                showDebug("📦 GPT 응답 저장됨");
 
     
     
@@ -980,7 +980,7 @@
                 */
 
 
-                
+
                 /* 
                 // 🔽🔽🔽 여기에 gTTS 영상 생성용 API 호출 추가 🔽🔽🔽
                 fetch("https://flask-server-v2.onrender.com/gpt_voice", {

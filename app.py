@@ -402,7 +402,10 @@ def gtts_api():
 
     try:
         tts = gTTS(text=text, lang='ko')
+
+        os.makedirs("/tmp", exist_ok=True)
         tts.save(mp3_path)
+        print(f"✅ [gTTS] MP3 저장 성공: {mp3_path}")
 
         subprocess.run([
             "ffmpeg", "-y",
@@ -422,7 +425,8 @@ def gtts_api():
         return "OK", 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"❌ [gTTS] MP3 저장 실패: {e}")
+        return jsonify({"error": "mp3 저장 실패", "details": str(e)}), 500
 
 
 

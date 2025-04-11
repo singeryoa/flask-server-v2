@@ -155,6 +155,12 @@ def world():
     return send_from_directory("static/world", "index.html")
 
 
+@app.route("/world/<path:filename>")
+def serve_world_files(filename):
+    return send_from_directory("static/world", filename)
+
+
+
 # Flask 라우트(/assets/<path:filename>) 를 반드시 넣고 커밋해야 함. 아래 3줄 반드시 필요.
 # 이 코드가 없다면 Render 서버는 /assets/avatar.glb 경로에 대한 요청을 처리할 수 없음.
 @app.route("/assets/<path:filename>")

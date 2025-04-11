@@ -184,7 +184,7 @@ def gpt_test():
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "당신은 한국어로만 답변하는 GPT입니다."},
+                {"role": "system", "content": "당신은 항상 한국어로만, 절대 한 문장을 넘기지 않고, 명확하고 단호하게 짧게만 대답해야 합니다."},
                 {"role": "user", "content": user_input}
             ]
         )
@@ -237,8 +237,7 @@ def get_gpt_video():
 
 @app.route("/gpt_response_video")
 def get_gpt_response_video():
-    return send_file("/tmp/response_gpt.mp4", mimetype="video/mp4")
-
+    return send_from_directory("static/audio", "response_gpt.mp4")
 
 
 
@@ -388,8 +387,9 @@ def gtts_api():
 
 
     # GPT 응답 전용 저장 위치 (Render 안전 경로)
-    mp3_path = "/tmp/response_gpt.mp3"
-    mp4_path = "/tmp/response_gpt.mp4"
+    mp3_path = "static/audio/response_gpt.mp3"
+    mp4_path = "static/audio/response_gpt.mp4"
+
     white_img = "static/audio/white.jpg"
 
 
@@ -419,8 +419,9 @@ def gtts_api():
             "-shortest",
             "-pix_fmt", "yuv420p",
             "-movflags", "+faststart",
+            "-t", "5",    
             mp4_path
-        ], check=True)
+        ], check=True, timeout=20)
 
         return "OK", 200
 

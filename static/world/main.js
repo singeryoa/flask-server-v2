@@ -459,8 +459,75 @@
 
 
 
+        gptSpeechCylinder.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
+                // 음성 인식 시작
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+        
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(chunks, { type: 'audio/mp3' });
+                    const formData = new FormData();
+                    formData.append("file", blob, "voice.mp3");
+        
+                    try {
+                        // Whisper → 텍스트 인식
+                        const res = await fetch("https://flask-server-v2.onrender.com/whisper", {
+                            method: "POST",
+                            body: formData
+                        });
+        
+                        const text = await res.text();
+                        const data = JSON.parse(text);
+                        const question = data.text?.trim();
+                        if (!question) return;
+        
+                        showDebug("📤 Whisper 결과 → GPT 전송: " + question);
+        
+                        // GPT 응답 요청
+                        const gptRes = await fetch("https://flask-server-v2.onrender.com/gpt_test", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: question })
+                        });
+                        const gptData = await gptRes.json();
+                        const answer = gptData.response;
+        
+                        showDebug("📥 GPT 응답 도착 → gTTS 전송");
+        
+                        // gTTS로 변환 요청
+                        await fetch("https://flask-server-v2.onrender.com/gtts", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ text: answer })
+                        });
+        
+                        // mp4 영상 재생
+                        window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
+                        window.gttsVideoElement.currentTime = 0;
+                        window.gttsVideoElement.play();
+                        showDebug("✅ GPT 응답 영상 재생 완료");
+        
+                    } catch (err) {
+                        console.error("❌ 오류 발생:", err);
+                        showDebug("❌ 처리 실패: " + err.message);
+                    }
+                };
+        
+                mediaRecorder.start();
+                setTimeout(() => mediaRecorder.stop(), 5000);
+            })
+        );
+        
 
 
+
+
+
+
+        /*  이건 음성 인식 후 원기둥을 클릭하면 GPT 음성영상을 출력하는 구조이므로 일단 생략
         // ✅ GPT 응답을 음성(mp4)으로 출력하는 전용 원기둥 생성
         const gptSpeechCylinder = BABYLON.MeshBuilder.CreateCylinder("gptSpeechCylinder", {
             diameter: 0.5,
@@ -469,6 +536,7 @@
         gptSpeechCylinder.position = new BABYLON.Vector3(-1, 0.5, 0);  // 기존 오브젝트와 간섭 없이 적당히 배치
 
         gptSpeechCylinder.actionManager = new BABYLON.ActionManager(scene);
+
         gptSpeechCylinder.actionManager.registerAction(
           new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
             showDebug("🎤 원기둥 클릭됨: 음성 녹음 시작");
@@ -565,7 +633,7 @@
             }
           })
         );
-            
+        */    
 
 
 
@@ -1092,6 +1160,22 @@
         */
     
     
+        /*  이건 gtts 비디오 출력을 위한 스크립트. 일단 생략
+        if (!window.gttsVideoElement) {
+            const gttsVideo = document.createElement("video");
+            gttsVideo.crossOrigin = "anonymous";
+            gttsVideo.loop = false;
+            gttsVideo.autoplay = false;
+            gttsVideo.muted = true;
+            gttsVideo.playsInline = true;
+            window.gttsVideoElement = gttsVideo;
+        
+            console.log("✅ gttsVideoElement 생성 완료");
+            showDebug("✅ gttsVideoElement 생성 완료");
+        }
+        */
+
+
     
     
         setTimeout(() => {

@@ -31,6 +31,8 @@ import subprocess
 
 import logging
 
+from pathlib import Path
+
 
 
 
@@ -391,9 +393,23 @@ def gtts_api():
 
 
 
-    # TTS 생성
-    tts = gTTS(text=text, lang='ko')
-    tts.save(mp3_path)
+    # gTTS → MP3 저장
+    try:
+        tts = gTTS(text=text, lang='ko')
+        tts.save(mp3_path)
+        print("✅ [gTTS] 저장 시도 완료")
+
+        # 실제 저장 확인
+        if not Path(mp3_path).is_file():
+            print("❌ [gTTS] MP3 저장 실패 - 파일이 생성되지 않음")
+            return "gTTS save failed", 500
+
+        print("✅ [gTTS] MP3 파일 확인됨:", mp3_path)
+    except Exception as e:
+        print("❌ [gTTS] 저장 중 에러:", e)
+        return jsonify({"error": f"gTTS save failed: {str(e)}"}), 500
+
+
 
     # ✅ ffmpeg를 백그라운드에서 실행 (timeout 방지용)
     subprocess.Popen([

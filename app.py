@@ -395,21 +395,16 @@ def gtts_api():
     tts = gTTS(text=text, lang='ko')
     tts.save(mp3_path)
 
-    # ffmpeg로 mp4 변환 (오디오만 포함)
-    subprocess.run([
-        "ffmpeg", "-y",
-        "-loop", "1",
-        "-i", white_img,
+    # ✅ ffmpeg를 백그라운드에서 실행 (timeout 방지용)
+    subprocess.Popen([
+        "ffmpeg",
+        "-y", "-loop", "1",
+        "-i", "static/audio/white.jpg",
         "-i", mp3_path,
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-tune", "stillimage",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-shortest",
+        "-c:v", "libx264", "-tune", "stillimage",
+        "-c:a", "aac", "-b:a", "192k",
         "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart",
-        mp4_path
+        "-shortest", mp4_path
     ])
 
     print("✅ gTTS → MP4 저장 완료:", mp4_path)  # 로그 확인용

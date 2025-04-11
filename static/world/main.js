@@ -473,6 +473,7 @@
         gptSpeechCylinder.material = gptMat;
 
         console.log("✅ gTTS 테스트용 원기둥 생성 완료");
+        showDebug("📥 gTTS 테스트용 원기둥 생성 완료");
 
 
         gptSpeechCylinder.actionManager = new BABYLON.ActionManager(scene);
@@ -480,6 +481,8 @@
         gptSpeechCylinder.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
                 // 음성 인식 시작
+                console.log("🎤 원기둥 클릭됨 → 음성 인식 시작");
+                showDebug("📥 원기둥 클릭됨 → 음성 인식 시작");
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 const mediaRecorder = new MediaRecorder(stream);
                 const chunks = [];

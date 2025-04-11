@@ -525,8 +525,9 @@
                             body: JSON.stringify({ text: answer })
                         });
         
-                        // mp4 영상 재생
-                        window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
+                        // mp4 영상 재생    두 줄 아래에서 바로 아래로 변경
+                        window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/static/audio/response.mp4";
+                        // window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
                         window.gttsVideoElement.currentTime = 0;
                         window.gttsVideoElement.play();
                         showDebug("✅ GPT 응답 영상 재생 완료");
@@ -841,7 +842,7 @@
     
     
     
-    
+     
     
         // GPT로 메시지 전송
         // static/world/index.html 파일의 "GPT 대화 UI" 주석처리 부분이 쌍으로 같이 있어야 함

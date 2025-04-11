@@ -407,19 +407,26 @@ def gtts_api():
         tts.save(mp3_path)
         print(f"✅ [gTTS] MP3 저장 성공: {mp3_path}")
 
+
+        if not os.path.exists(mp3_path):
+            print("❌ mp3 파일 없음: ffmpeg 실행 중단")
+            return "mp3 missing", 500
+
+        # ffmpeg 실행
         subprocess.run([
             "ffmpeg", "-y",
             "-loop", "1",
             "-i", white_img,
             "-i", mp3_path,
             "-c:v", "libx264",
+            "-preset", "ultrafast",  # 🔥 인코딩 속도 개선
             "-tune", "stillimage",
             "-c:a", "aac",
             "-b:a", "192k",
             "-shortest",
             "-pix_fmt", "yuv420p",
             "-movflags", "+faststart",
-            "-t", "4",    
+            "-t", "2",       # 길이 제한
             mp4_path
         ], check=True, timeout=20)
 

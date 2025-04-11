@@ -525,12 +525,29 @@
                     body: JSON.stringify({ text: gptResponse })
                   });
         
+
+                  // 1. gttsVideoElement 존재 여부 콘솔에 로그 추가
+                  console.log("🎬 gttsVideoElement 확인:", window.gttsVideoElement);
+
                   // 영상 재생
                   if (window.gttsVideoElement) {
                     window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/static/audio/gpt_response.mp4";
                     window.gttsVideoElement.currentTime = 0;
-                    window.gttsVideoElement.play();
-                    showDebug("✅ GPT 응답 영상 재생 시작");
+                    
+                    window.gttsVideoElement.play()
+                        .then(() => {
+                            showDebug("✅ GPT 음성 영상 재생 시작");
+                            console.log("🎬 영상 재생 성공");
+                        })
+                        .catch(err => {
+                                console.error("❌ 영상 재생 실패:", err);
+                                showDebug("❌ GPT 음성 영상 재생 실패");
+                        });
+
+                    showDebug("✅ GPT 응답 영상 재생 시작 2");
+                  } else {
+                    console.warn("⚠️ gttsVideoElement가 정의되지 않았습니다");
+                    showDebug("❌ gttsVideoElement가 없음");
                   }
         
                 } catch (e) {

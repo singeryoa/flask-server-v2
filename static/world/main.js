@@ -1181,7 +1181,7 @@
         */
     
     
-        /*  이건 gtts 비디오 출력을 위한 스크립트. 일단 생략
+        // 이건 gtts 비디오 출력을 위한 스크립트
         if (!window.gttsVideoElement) {
             const gttsVideo = document.createElement("video");
             gttsVideo.crossOrigin = "anonymous";
@@ -1194,7 +1194,7 @@
             console.log("✅ gttsVideoElement 생성 완료");
             showDebug("✅ gttsVideoElement 생성 완료");
         }
-        */
+        
 
 
     

@@ -363,17 +363,26 @@ def gpt_voice():
 
 @app.route("/gtts", methods=["POST"])
 def gtts_api():
-    from gtts import gTTS
-    import subprocess
-
+    
     data = request.get_json()
     text = data.get("text", "").strip()
     if not text:
         return "No text provided", 400
 
+    os.makedirs("static/audio", exist_ok=True)  # 폴더 보장
+
     # mp3 저장 경로
     mp3_path = "static/audio/response.mp3"
     mp4_path = "static/audio/response.mp4"
+
+
+    # ✅ [여기 추가] 기존 파일 삭제 (안전하게 덮어쓰기)
+    if os.path.exists(mp3_path):
+        os.remove(mp3_path)
+    if os.path.exists(mp4_path):
+        os.remove(mp4_path)
+
+
 
     # TTS 생성
     tts = gTTS(text=text, lang='ko')
@@ -390,6 +399,8 @@ def gtts_api():
         "-movflags", "+faststart",
         mp4_path
     ])
+
+    print("✅ gTTS → MP4 저장 완료:", mp4_path)  # 로그 확인용
 
     return "OK", 200
 

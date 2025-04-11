@@ -432,7 +432,7 @@
 
                     // mp4 영상 재생
                     if (window.videoElement) {
-                        window.videoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
+                        window.videoElement.src = "/gpt_video";  // 상대경로로 변경 (CORS 이슈 방지)
                         window.videoElement.currentTime = 0;
                         await window.videoElement.play();
                         showDebug("✅ gTTS 영상 재생 시작");

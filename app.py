@@ -184,7 +184,7 @@ def gpt_test():
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "당신은 항상 한국어로만, 절대 한 문장을 넘기지 않고, 명확하고 단호하게 짧게만 대답해야 합니다."},
+                {"role": "system", "content": "한국어로만 3단어 이내로 짧고 강하게 대답하세요. 절대 설명하지 마세요."},
                 {"role": "user", "content": user_input}
             ]
         )
@@ -419,7 +419,7 @@ def gtts_api():
             "-shortest",
             "-pix_fmt", "yuv420p",
             "-movflags", "+faststart",
-            "-t", "5",    
+            "-t", "4",    
             mp4_path
         ], check=True, timeout=20)
 

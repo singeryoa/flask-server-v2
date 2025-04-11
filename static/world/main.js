@@ -459,6 +459,24 @@
 
 
 
+        // ✅ GPT 응답을 음성(mp4)으로 출력하는 전용 원기둥 생성
+        const gptSpeechCylinder = BABYLON.MeshBuilder.CreateCylinder("gptSpeechCylinder", {
+            diameter: 0.5,
+            height: 1
+        }, scene);
+        gptSpeechCylinder.position = new BABYLON.Vector3(-1, 0.5, 0);  // 기존 오브젝트와 간섭 없이 적당히 배치
+        window.gptSpeechCylinder = gptSpeechCylinder; // 반드시 윈도우에 등록
+
+        // 재질 또는 색상 설정 (선택)
+        const gptMat = new BABYLON.StandardMaterial("gptMat", scene);
+        gptMat.diffuseColor = new BABYLON.Color3(1, 0.6, 0);
+        gptSpeechCylinder.material = gptMat;
+
+        console.log("✅ gTTS 테스트용 원기둥 생성 완료");
+
+
+        gptSpeechCylinder.actionManager = new BABYLON.ActionManager(scene);
+
         gptSpeechCylinder.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, async function () {
                 // 음성 인식 시작

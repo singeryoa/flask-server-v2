@@ -233,6 +233,15 @@ def gpt_test():
 def get_gpt_video():
     return send_from_directory("static/audio", "response.mp4")
 
+
+
+@app.route("/gpt_response_video")
+def get_gpt_response_video():
+    return send_file("/tmp/response_gpt.mp4", mimetype="video/mp4")
+
+
+
+
 """
 def gpt_video():
     # static 폴더 내 mp4 파일 경로
@@ -377,55 +386,44 @@ def gtts_api():
     if not text:
         return "No text provided", 400
 
-    os.makedirs("static/audio", exist_ok=True)  # 폴더 보장
 
-    # mp3 저장 경로
-    mp3_path = "static/audio/response.mp3"
-    mp4_path = "static/audio/response.mp4"
-    white_img = os.path.join("static", "audio", "white.jpg")  # 배경 이미지
-
-
-    # ✅ [여기 추가] 기존 파일 삭제 (안전하게 덮어쓰기)
-    if os.path.exists(mp3_path):
-        os.remove(mp3_path)
-    if os.path.exists(mp4_path):
-        os.remove(mp4_path)
+    # GPT 응답 전용 저장 위치 (Render 안전 경로)
+    mp3_path = "/tmp/response_gpt.mp3"
+    mp4_path = "/tmp/response_gpt.mp4"
+    white_img = "static/audio/white.jpg"
 
 
 
-    # gTTS → MP3 저장
+
+    # 기존 GPT 전용 파일 삭제
+    for path in [mp3_path, mp4_path]:
+        if os.path.exists(path):
+            os.remove(path)
+
     try:
         tts = gTTS(text=text, lang='ko')
         tts.save(mp3_path)
-        print("✅ [gTTS] 저장 시도 완료")
 
-        # 실제 저장 확인
-        if not Path(mp3_path).is_file():
-            print("❌ [gTTS] MP3 저장 실패 - 파일이 생성되지 않음")
-            return "gTTS save failed", 500
+        subprocess.run([
+            "ffmpeg", "-y",
+            "-loop", "1",
+            "-i", white_img,
+            "-i", mp3_path,
+            "-c:v", "libx264",
+            "-tune", "stillimage",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-shortest",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            mp4_path
+        ], check=True)
 
-        print("✅ [gTTS] MP3 파일 확인됨:", mp3_path)
+        return "OK", 200
+
     except Exception as e:
-        print("❌ [gTTS] 저장 중 에러:", e)
-        return jsonify({"error": f"gTTS save failed: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
-
-
-    # ✅ ffmpeg를 백그라운드에서 실행 (timeout 방지용)
-    subprocess.Popen([
-        "ffmpeg",
-        "-y", "-loop", "1",
-        "-i", "static/audio/white.jpg",
-        "-i", mp3_path,
-        "-c:v", "libx264", "-tune", "stillimage",
-        "-c:a", "aac", "-b:a", "192k",
-        "-pix_fmt", "yuv420p",
-        "-shortest", mp4_path
-    ])
-
-    print("✅ gTTS → MP4 저장 완료:", mp4_path)  # 로그 확인용
-
-    return "OK", 200
 
 
 

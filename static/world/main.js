@@ -527,7 +527,9 @@
         
                         // mp4 영상 재생    두 줄 아래에서 바로 아래로 변경
                         // window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/static/audio/response.mp4";
-                        window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
+                        // window.gttsVideoElement.src = "https://flask-server-v2.onrender.com/gpt_video";
+                        // GPT 응답 영상 출력 시는 새 라우터 사용
+                        window.gttsVideoElement.src = "/gpt_response_video";
 
                         window.gttsVideoElement.currentTime = 0;
                         window.gttsVideoElement.play();

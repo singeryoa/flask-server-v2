@@ -380,6 +380,7 @@ def gtts_api():
     # mp3 저장 경로
     mp3_path = "static/audio/response.mp3"
     mp4_path = "static/audio/response.mp4"
+    white_img = os.path.join("static", "audio", "white.jpg")  # 배경 이미지
 
 
     # ✅ [여기 추가] 기존 파일 삭제 (안전하게 덮어쓰기)
@@ -396,12 +397,17 @@ def gtts_api():
 
     # ffmpeg로 mp4 변환 (오디오만 포함)
     subprocess.run([
-        "ffmpeg",
-        "-y",  # 덮어쓰기
+        "ffmpeg", "-y",
+        "-loop", "1",
+        "-i", white_img,
         "-i", mp3_path,
-        "-vf", "format=yuv420p",
         "-c:v", "libx264",
-        "-preset", "fast",
+        "-preset", "ultrafast",
+        "-tune", "stillimage",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        "-shortest",
+        "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
         mp4_path
     ])
